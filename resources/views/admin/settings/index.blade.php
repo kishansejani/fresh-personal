@@ -99,262 +99,495 @@
         ['Luxury violet',  'Premium and bold',       ['#7C3AED', '#6D28D9', '#EC4899', '#0F172A', '#E9D5FF', '#7C3AED', '#6D28D9']],
         ['Amber gold',     'Warm e-commerce',        ['#D97706', '#B45309', '#EF4444', '#18181B', '#FDE68A', '#D97706', '#B45309']],
     ];
+
+    $frontPresets = [
+        [
+            'name' => 'Fresh Emerald (Default)',
+            'desc' => 'Classic crisp green grocery theme',
+            'colors' => ['#059669', '#047857', '#ECFDF5', '#10B981', '#059669', '#064E3B', '#F6F8F7', '#FFFFFF', '#E2E8F0', '#0F172A'],
+            'dark'   => ['#34D399', '#6EE7B7', '#064E3B', '#10B981', '#059669', '#020617', '#0F172A', '#1E293B', '#0B1120', '#F1F5F9'],
+        ],
+        [
+            'name' => 'Ocean Blue',
+            'desc' => 'Cool, modern and trustworthy blue',
+            'colors' => ['#0284C7', '#0369A1', '#E0F2FE', '#0EA5E9', '#0284C7', '#0C4A6E', '#F0F9FF', '#FFFFFF', '#BAE6FD', '#0F172A'],
+            'dark'   => ['#38BDF8', '#7DD3FC', '#0C4A6E', '#0EA5E9', '#0284C7', '#020817', '#0F172A', '#1E293B', '#082F49', '#F1F5F9'],
+        ],
+        [
+            'name' => 'Royal Purple',
+            'desc' => 'Vibrant, premium shopping experience',
+            'colors' => ['#7C3AED', '#6D28D9', '#F5F3FF', '#8B5CF6', '#7C3AED', '#4C1D95', '#FAF5FF', '#FFFFFF', '#DDD6FE', '#0F172A'],
+            'dark'   => ['#A78BFA', '#C4B5FD', '#4C1D95', '#8B5CF6', '#7C3AED', '#090514', '#150D2A', '#2E1065', '#1F1147', '#F5F3FF'],
+        ],
+        [
+            'name' => 'Sunset Orange',
+            'desc' => 'Warm, appetizing and vibrant tone',
+            'colors' => ['#EA580C', '#C2410C', '#FFF7ED', '#F97316', '#EA580C', '#7C2D12', '#FFFBF5', '#FFFFFF', '#FED7AA', '#18181B'],
+            'dark'   => ['#FB923C', '#FDBA74', '#7C2D12', '#F97316', '#EA580C', '#0C0A09', '#1C1917', '#292524', '#1C1917', '#FAFAF9'],
+        ],
+        [
+            'name' => 'Crimson Rose',
+            'desc' => 'Bold, stylish and high energy',
+            'colors' => ['#E11D48', '#BE123C', '#FFF1F2', '#F43F5E', '#E11D48', '#881337', '#FFF5F6', '#FFFFFF', '#FECDD3', '#0F172A'],
+            'dark'   => ['#FB7185', '#FDA4AF', '#881337', '#F43F5E', '#E11D48', '#0D0407', '#1A0B10', '#2E111C', '#1A0B10', '#FFF1F2'],
+        ],
+    ];
+
+    $mode = old('theme_mode', $settings['theme_mode'] ?? 'system');
 @endphp
 
-    {{-- Page Header --}}
-    <div class="page-header">
-        <div class="page-header-main">
-            <div class="page-header-icon"><i class="ph-duotone ph-gear-six"></i></div>
-            <div>
-                <h1 class="page-title">{{ __('Settings & Color Management') }}</h1>
-                <p class="page-subtitle">{{ __('Centralized color system, branding and appearance controls across the entire system.') }}</p>
-            </div>
-        </div>
-        <div class="page-actions">
-            <a href="{{ route('admin.settings.reset') }}" onclick="return confirm('Are you sure you want to reset settings to defaults?')" class="btn btn-outline">
-                <i class="ph ph-arrow-counter-clockwise"></i> {{ __('Reset Defaults') }}
+    <x-admin.page-header title="Settings & Color Management" subtitle="Centralized color system, branding and appearance controls across the entire system." icon="gear-six">
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.settings.reset') }}" class="btn btn-outline" data-confirm="All colours (Admin & Frontend Light/Dark), footer text and the store name will return to their default values." data-confirm-title="Reset all settings to defaults?" data-confirm-button="Reset All" data-confirm-danger>
+                <i class="ph ph-arrow-counter-clockwise"></i> Reset Defaults
             </a>
-            <button type="submit" form="settingsForm" class="btn btn-primary">
-                <i class="ph-bold ph-floppy-disk"></i> {{ __('Save Settings') }}
-            </button>
+            <button type="submit" form="settingsForm" class="btn btn-primary"><i class="ph ph-floppy-disk"></i> Save Settings</button>
         </div>
-    </div>
+    </x-admin.page-header>
 
-    {{-- Module Switcher Tabs --}}
-    <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3 mb-6 overflow-x-auto">
-        <button type="button" class="tab-btn is-active flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition" data-target-tab="tab-admin">
-            <i class="ph-duotone ph-shield-check text-base"></i>
-            <span>{{ __('Admin Console Theme') }}</span>
+    {{-- Navigation Tabs --}}
+    <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 mb-6 overflow-x-auto no-scrollbar">
+        <button type="button" class="tab-btn is-active flex items-center gap-2 px-4 py-3 font-bold text-sm border-b-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 -mb-px transition" data-tab-target="tabAdminTheme">
+            <i class="ph-duotone ph-shield-check text-lg"></i>
+            <span>Admin Console Theme</span>
         </button>
-        <button type="button" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition" data-target-tab="tab-front">
-            <i class="ph-duotone ph-storefront text-base"></i>
-            <span>{{ __('Frontend Web Colors') }}</span>
-            <span class="badge badge-neutral text-[9.5px] uppercase tracking-wider">{{ __('Super Admin') }}</span>
-        </button>
-        <button type="button" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition" data-target-tab="tab-dark">
-            <i class="ph-duotone ph-moon-stars text-base"></i>
-            <span>{{ __('Dark Mode Colors') }}</span>
-            <span class="badge badge-neutral text-[9.5px] uppercase tracking-wider">{{ __('Dark Theme') }}</span>
-        </button>
+        @if($isSuperAdmin)
+            <button type="button" class="tab-btn flex items-center gap-2 px-4 py-3 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white -mb-px transition" data-tab-target="tabFrontTheme">
+                <i class="ph-duotone ph-storefront text-lg"></i>
+                <span>Frontend Web Colors</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">Super Admin</span>
+            </button>
+            <button type="button" class="tab-btn flex items-center gap-2 px-4 py-3 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white -mb-px transition" data-tab-target="tabFrontDarkTheme">
+                <i class="ph-duotone ph-moon-stars text-lg"></i>
+                <span>Dark Mode Colors</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300">Dark Theme</span>
+            </button>
+        @endif
     </div>
 
     <form action="{{ route('admin.settings.update') }}" method="POST" id="settingsForm">
         @csrf
 
-        {{-- TAB 1: ADMIN CONSOLE THEME --}}
-        <div id="tab-admin" class="settings-tab">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                
-                {{-- Left Side: Controls --}}
-                <div class="lg:col-span-2 space-y-6">
+        {{-- ============================== TAB 1: ADMIN CONSOLE THEME ============================== --}}
+        <div id="tabAdminTheme" class="tab-pane space-y-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+                <div class="xl:col-span-2 space-y-5 min-w-0">
 
-                    {{-- General Details --}}
+                    {{-- General --}}
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h3 class="card-title"><i class="ph-duotone ph-storefront"></i> {{ __('General Details') }}</h3>
-                                <p class="card-subtitle">{{ __('Shown in the sidebar, browser tab title, invoices and exports.') }}</p>
+                                <h3 class="card-title"><i class="ph-duotone ph-storefront"></i> General Details</h3>
+                                <p class="card-subtitle">Shown in the sidebar, browser tab title, invoices and exports.</p>
                             </div>
                         </div>
                         <div class="card-body">
-                            <label for="storeName" class="form-label">{{ __('Store / Panel Name') }}</label>
-                            <input type="text" id="storeName" name="store_name" value="{{ $s('store_name', 'Fresh Express') }}" required maxlength="60" class="form-control font-medium">
-                            <p class="form-hint mt-1.5">{{ __('Displayed across the top navigation and storefront.') }}</p>
+                            <label for="storeName" class="form-label">Store / Panel Name</label>
+                            <input type="text" id="storeName" name="store_name" value="{{ $s('store_name', 'Fresh Express') }}" maxlength="60" placeholder="Fresh Express" class="form-control{{ $errors->has('store_name') ? ' !border-rose-400' : '' }}">
+                            <p class="form-hint">Displayed across the top navigation and storefront.</p>
+                            @error('store_name')<p class="text-xs font-semibold text-rose-600 mt-1">{{ $message }}</p>@enderror
                         </div>
                     </div>
 
-                    {{-- Admin Theme Presets --}}
+                    {{-- Presets --}}
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h3 class="card-title"><i class="ph-duotone ph-swatches"></i> {{ __('Admin Theme Presets') }}</h3>
-                                <p class="card-subtitle">{{ __('Apply a curated palette to the admin console in one click.') }}</p>
+                                <h3 class="card-title"><i class="ph-duotone ph-swatches"></i> Admin Theme Presets</h3>
+                                <p class="card-subtitle">Apply a curated palette to the admin console in one click.</p>
                             </div>
+                        </div>
+                        <div class="card-body grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                            @foreach($adminPresets as [$pName, $pHint, $c])
+                                <button type="button" onclick="applyAdminPreset('{{ implode("', '", $c) }}')" class="group text-left p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-slate-400 dark:hover:border-slate-500 hover:shadow-soft transition {{ $loop->last ? 'col-span-2 sm:col-span-1' : '' }}">
+                                    <span class="flex h-9 rounded-lg overflow-hidden mb-2.5 border border-black/5">
+                                        <span class="w-1/3" style="background: {{ $c[3] }}"></span>
+                                        <span class="w-1/3" style="background: {{ $c[0] }}"></span>
+                                        <span class="w-1/6" style="background: {{ $c[2] }}"></span>
+                                        <span class="w-1/6" style="background: {{ $c[4] }}"></span>
+                                    </span>
+                                    <span class="block text-[12.5px] font-bold text-slate-900 dark:text-white">{{ $pName }}</span>
+                                    <span class="block text-[11px] text-slate-500 dark:text-slate-400">{{ $pHint }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Admin Colours --}}
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="ph-duotone ph-palette"></i> Admin Color Palette</h3>
+                                <p class="card-subtitle">Changes preview live on this page. Save to apply them across the console.</p>
+                            </div>
+                            <span class="badge badge-success badge-dot">Live preview</span>
+                        </div>
+                        <div class="card-body space-y-6">
+                            @foreach($adminColorGroups as $groupName => $fields)
+                                <div>
+                                    <p class="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3"><i class="ph ph-circle text-xs text-emerald-500"></i> {{ $groupName }}</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+                                        @foreach($fields as [$key, $pickerId, $textId, $label, $hint, $default])
+                                            @php $val = $s($key, $default); @endphp
+                                            <div>
+                                                <label for="{{ $textId }}" class="form-label">{{ $label }} @if($key !== 'sidebar_text_color')<span class="text-rose-500">*</span>@endif</label>
+                                                <div class="flex items-center gap-2">
+                                                    <input type="color" id="{{ $pickerId }}" value="{{ preg_match('/^#[0-9a-fA-F]{6}$/', $val) ? strtolower($val) : $default }}" aria-label="{{ $label }} picker"
+                                                           class="w-11 h-10 shrink-0 rounded-xl cursor-pointer border border-slate-300 dark:border-slate-600 p-1 bg-white dark:bg-slate-900">
+                                                    <input type="text" id="{{ $textId }}" name="{{ $key }}" value="{{ $val }}" maxlength="20" @if($key !== 'sidebar_text_color') required @endif spellcheck="false"
+                                                           class="form-control font-mono uppercase{{ $errors->has($key) ? ' !border-rose-400' : '' }}">
+                                                </div>
+                                                <p class="form-hint">{{ $hint }}</p>
+                                                @error($key)<p class="text-xs font-semibold text-rose-600 mt-1">{{ $message }}</p>@enderror
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Appearance --}}
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="ph-duotone ph-monitor"></i> Default Theme Mode</h3>
+                                <p class="card-subtitle">Initial default mode for users before manual toggle.</p>
+                            </div>
+                        </div>
+                        <div class="card-body grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            @foreach([['light', 'Light', 'sun', 'Bright, crisp high-contrast surfaces'], ['dark', 'Dark', 'moon', 'Easy on the eyes in low light'], ['system', 'System', 'desktop', 'Follows device/OS appearance']] as [$mVal, $mLabel, $mIcon, $mHint])
+                                <label class="mode-tile flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer transition">
+                                    <input type="radio" name="theme_mode" value="{{ $mVal }}" {{ $mode === $mVal ? 'checked' : '' }} class="mt-1 w-4 h-4 border-slate-300 text-emerald-600 focus:ring-emerald-500" data-theme-radio>
+                                    <span>
+                                        <span class="flex items-center gap-1.5 text-[13px] font-bold text-slate-900 dark:text-white"><i class="ph-duotone ph-{{ $mIcon }} text-base"></i> {{ $mLabel }}</span>
+                                        <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $mHint }}</span>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Footer --}}
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="ph-duotone ph-copyright"></i> Footer Credits</h3>
+                                <p class="card-subtitle">Text shown at the bottom of the admin console.</p>
+                            </div>
+                        </div>
+                        <div class="card-body grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="footerPrefix" class="form-label">Copyright Text</label>
+                                <input type="text" id="footerPrefix" name="footer_copyright_prefix" value="{{ $s('footer_copyright_prefix', '© 2026, made with ❤️ by') }}" maxlength="100" class="form-control">
+                            </div>
+                            <div>
+                                <label for="footerName" class="form-label">Credit Name</label>
+                                <input type="text" id="footerName" name="footer_creator_name" value="{{ $s('footer_creator_name', 'Decent Infoways') }}" maxlength="100" class="form-control">
+                            </div>
+                            <div>
+                                <label for="footerUrl" class="form-label">Credit Link</label>
+                                <input type="url" id="footerUrl" name="footer_creator_url" value="{{ $s('footer_creator_url', 'https://decentinfoways.com') }}" maxlength="255" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Sidebar: Live Preview --}}
+                <div class="space-y-5 min-w-0 xl:sticky xl:top-20">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="ph-duotone ph-eye"></i> Admin Preview</h3>
+                            <span class="text-[11px] font-semibold text-slate-400">Live</span>
                         </div>
                         <div class="card-body">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                                @foreach($adminPresets as [$pName, $pDesc, $pColors])
-                                    <button type="button" class="preset-card text-left p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-400 bg-white dark:bg-slate-900 transition" onclick="applyAdminPreset('{{ $pColors[0] }}', '{{ $pColors[1] }}', '{{ $pColors[2] }}', '{{ $pColors[3] }}', '{{ $pColors[4] }}', '{{ $pColors[5] }}', '{{ $pColors[6] }}')">
-                                        <div class="flex items-center gap-1 mb-2.5">
-                                            @foreach(array_slice($pColors, 0, 5) as $c)
-                                                <span class="w-4 h-4 rounded-full" style="background: {{ $c }}"></span>
-                                            @endforeach
-                                        </div>
-                                        <h4 class="text-xs font-bold text-slate-900 dark:text-white">{{ $pName }}</h4>
-                                        <p class="text-[11px] text-slate-400 truncate">{{ $pDesc }}</p>
-                                    </button>
-                                @endforeach
+                            <div class="pv-shell" id="themePreview">
+                                <aside class="pv-side">
+                                    <div class="pv-brand"><span class="pv-logo"><i class="ph-fill ph-basket"></i></span><span class="pv-brand-name" id="pvStoreName">{{ $s('store_name', 'Fresh Express') ?: 'Fresh Express' }}</span></div>
+                                    <span class="pv-item"><i class="ph ph-squares-four"></i> Dashboard</span>
+                                    <span class="pv-item is-active"><i class="ph-fill ph-shopping-cart-simple"></i> Orders</span>
+                                    <span class="pv-item"><i class="ph ph-package"></i> Products</span>
+                                    <span class="pv-item"><i class="ph ph-users"></i> Users</span>
+                                </aside>
+                                <div class="pv-main">
+                                    <span class="pv-line w-3/4"></span>
+                                    <span class="pv-line w-1/2"></span>
+                                    <a class="pv-link" href="#" onclick="return false">View all orders</a>
+                                    <div class="pv-btns">
+                                        <span class="pv-btn pv-btn-primary" id="previewPrimaryBtn"><i class="ph ph-floppy-disk"></i> Save</span>
+                                        <span class="pv-btn pv-btn-accent" id="previewAccentBtn"><i class="ph-bold ph-plus"></i> Add</span>
+                                    </div>
+                                    <span class="pv-input"></span>
+                                </div>
                             </div>
+                            <p class="form-hint mt-3">The real sidebar, headers, and buttons update automatically as you edit color hex codes.</p>
                         </div>
                     </div>
 
-                    {{-- Admin Color Pickers --}}
-                    @foreach($adminColorGroups as $groupName => $fields)
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="ph-duotone ph-palette"></i> {{ $groupName }} {{ __('Colours') }}</h3>
-                            </div>
-                            <div class="card-body grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                @foreach($fields as [$name, $pickerId, $textId, $label, $desc, $default])
-                                    <div class="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                                        <label for="{{ $textId }}" class="form-label !mb-0.5 text-xs font-bold">{{ $label }}</label>
-                                        <p class="text-[11px] text-slate-400 mb-2.5">{{ $desc }}</p>
-                                        <div class="flex items-center gap-2">
-                                            <input type="color" id="{{ $pickerId }}" value="{{ $s($name, $default) }}" class="w-9 h-9 rounded-lg border-0 p-0 cursor-pointer bg-transparent">
-                                            <input type="text" id="{{ $textId }}" name="{{ $name }}" value="{{ $s($name, $default) }}" required maxlength="20" class="form-control font-mono uppercase text-xs !h-9">
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endforeach
-
-                    {{-- Footer & Copyright --}}
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="ph-duotone ph-copyright"></i> {{ __('Footer Details') }}</h3>
+                        <div class="card-body flex gap-2.5">
+                            <a href="{{ route('admin.settings.reset') }}" class="btn btn-outline flex-1 justify-center" data-confirm="Reset all colors to system defaults?" data-confirm-button="Reset" data-confirm-danger><i class="ph ph-arrow-counter-clockwise"></i> Reset</a>
+                            <button type="submit" class="btn btn-primary flex-1 justify-center"><i class="ph ph-floppy-disk"></i> Save Settings</button>
                         </div>
-                        <div class="card-body grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div>
-                                <label for="footerPrefix" class="form-label">{{ __('Copyright prefix') }}</label>
-                                <input type="text" id="footerPrefix" name="footer_copyright_prefix" value="{{ $s('footer_copyright_prefix', '© ' . date('Y') . ', made with ❤️ by') }}" class="form-control text-xs">
-                            </div>
-                            <div>
-                                <label for="footerCreator" class="form-label">{{ __('Creator name') }}</label>
-                                <input type="text" id="footerCreator" name="footer_creator_name" value="{{ $s('footer_creator_name', 'Decent Infoways') }}" class="form-control text-xs">
-                            </div>
-                            <div>
-                                <label for="footerUrl" class="form-label">{{ __('Creator URL') }}</label>
-                                <input type="url" id="footerUrl" name="footer_creator_url" value="{{ $s('footer_creator_url', 'https://decentinfoways.com') }}" class="form-control text-xs">
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                {{-- Right Side: Live Admin Preview Widget --}}
-                <div class="space-y-6 lg:sticky lg:top-24">
-                    <div class="card overflow-hidden">
-                        <div class="card-header bg-slate-50 dark:bg-slate-800/50">
-                            <h3 class="card-title text-xs"><i class="ph-duotone ph-eye"></i> {{ __('Admin Preview') }}</h3>
-                            <span class="badge badge-success text-[10px]">{{ __('Live') }}</span>
-                        </div>
-                        <div class="p-4 bg-slate-100 dark:bg-slate-950 flex items-center justify-center">
-                            
-                            {{-- Simulated Mockup --}}
-                            <div class="w-full max-w-sm rounded-2xl overflow-hidden shadow-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 grid grid-cols-[85px_1fr] text-[10px]">
-                                {{-- Preview Sidebar --}}
-                                <div id="pvSidebar" class="p-2.5 flex flex-col justify-between" style="background: var(--sidebar-bg); color: var(--sidebar-text);">
-                                    <div class="space-y-2">
-                                        <div class="flex items-center gap-1 font-bold text-[11px] truncate" id="pvStoreName">
-                                            <i class="ph-fill ph-basket"></i> <span>{{ $s('store_name', 'Fresh Express') }}</span>
-                                        </div>
-                                        <div class="space-y-1 pt-1">
-                                            <div class="p-1 rounded-md opacity-70 flex items-center gap-1"><i class="ph ph-squares-four"></i> Dashboard</div>
-                                            <div class="p-1 rounded-md font-bold flex items-center gap-1" id="pvActiveMenuItem" style="background: var(--sidebar-active); color: var(--sidebar-active-text);"><i class="ph ph-shopping-cart-simple"></i> Orders</div>
-                                            <div class="p-1 rounded-md opacity-70 flex items-center gap-1"><i class="ph ph-package"></i> Products</div>
-                                            <div class="p-1 rounded-md opacity-70 flex items-center gap-1"><i class="ph ph-users-three"></i> Users</div>
-                                        </div>
-                                    </div>
-                                    <div class="pt-2 border-t border-white/10 opacity-75 truncate">
-                                        Admin User
-                                    </div>
-                                </div>
-
-                                {{-- Preview Content Area --}}
-                                <div class="p-3 space-y-2.5 bg-slate-50 dark:bg-slate-900/60">
-                                    <div class="h-2 w-16 rounded bg-slate-200 dark:bg-slate-700"></div>
-                                    <a href="javascript:void(0)" id="pvLink" class="font-bold underline block" style="color: var(--theme-hover);">View all orders</a>
-                                    <div class="flex gap-1.5 pt-1">
-                                        <button type="button" id="pvBtnPrimary" class="px-2.5 py-1 rounded-md font-bold shadow-xs text-[9px]" style="background: var(--btn-primary-bg); color: var(--btn-primary-text);">
-                                            <i class="ph ph-floppy-disk"></i> Save
-                                        </button>
-                                        <button type="button" id="pvBtnAccent" class="px-2.5 py-1 rounded-md font-bold shadow-xs text-[9px]" style="background: var(--btn-accent-bg); color: var(--btn-accent-text);">
-                                            <i class="ph ph-plus"></i> Add
-                                        </button>
-                                    </div>
-                                    <div class="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1">
-                                        <div class="h-1.5 w-12 rounded bg-slate-200 dark:bg-slate-700"></div>
-                                        <div class="h-3 w-full rounded border border-slate-200 dark:border-slate-700"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div class="p-3 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 text-center">
-                            {{ __('The real sidebar, headers, and buttons update automatically as you edit color hex codes.') }}
-                        </div>
-                    </div>
-
-                    {{-- Sticky Action Buttons --}}
-                    <div class="card p-4 flex gap-2.5">
-                        <a href="{{ route('admin.settings.reset') }}" class="btn btn-outline flex-1 justify-center" onclick="return confirm('Reset all settings?')">
-                            <i class="ph ph-arrow-counter-clockwise"></i> {{ __('Reset') }}
-                        </a>
-                        <button type="submit" class="btn btn-primary flex-1 justify-center">
-                            <i class="ph-bold ph-floppy-disk"></i> {{ __('Save Settings') }}
-                        </button>
                     </div>
                 </div>
-
             </div>
         </div>
 
-        {{-- TAB 2: FRONTEND WEB COLORS --}}
-        <div id="tab-front" class="settings-tab hidden space-y-6">
-            @foreach($frontLightGroups as $groupTitle => $groupFields)
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="ph-duotone ph-paint-brush"></i> {{ $groupTitle }}</h3>
-                    </div>
-                    <div class="card-body grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        @foreach($groupFields as [$key, $pickerId, $textId, $label, $desc, $default])
-                            <div class="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                                <label for="{{ $textId }}" class="form-label !mb-0.5 text-xs font-bold">{{ $label }}</label>
-                                <p class="text-[11px] text-slate-400 mb-2.5">{{ $desc }}</p>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" id="{{ $pickerId }}" value="{{ $s($key, $default) }}" class="w-9 h-9 rounded-lg border-0 p-0 cursor-pointer bg-transparent">
-                                    <input type="text" id="{{ $textId }}" name="{{ $key }}" value="{{ $s($key, $default) }}" maxlength="30" class="form-control font-mono uppercase text-xs !h-9">
-                                </div>
+        {{-- ============================== TAB 2: FRONTEND WEB COLORS (LIGHT) ============================== --}}
+        @if($isSuperAdmin)
+        <div id="tabFrontTheme" class="tab-pane hidden space-y-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+                <div class="xl:col-span-2 space-y-5 min-w-0">
+
+                    {{-- Frontend Presets --}}
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="ph-duotone ph-sparkle"></i> Storefront Palette Presets</h3>
+                                <p class="card-subtitle">One-click theme switch for the entire public storefront (Buttons, Cards, Header, Topbar, Badges).</p>
                             </div>
-                        @endforeach
+                            <span class="badge badge-primary font-bold">1-Click Apply</span>
+                        </div>
+                        <div class="card-body grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            @foreach($frontPresets as $fp)
+                                <button type="button" onclick="applyFrontendPreset(@js($fp['colors']), @js($fp['dark']))" class="group text-left p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-md transition">
+                                    <span class="flex h-8 rounded-xl overflow-hidden mb-2.5 border border-black/5 shadow-inner">
+                                        <span class="w-1/4" style="background: {{ $fp['colors'][0] }}"></span>
+                                        <span class="w-1/4" style="background: {{ $fp['colors'][3] }}"></span>
+                                        <span class="w-1/4" style="background: {{ $fp['colors'][5] }}"></span>
+                                        <span class="w-1/4" style="background: {{ $fp['colors'][9] }}"></span>
+                                    </span>
+                                    <span class="block text-sm font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{{ $fp['name'] }}</span>
+                                    <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ $fp['desc'] }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Frontend Light Color Pickers --}}
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="ph-duotone ph-palette"></i> Frontend Web Light Mode Colors</h3>
+                                <p class="card-subtitle">Manage all colors of the public website (Buttons, Navigation, Cards, Tables, Inputs, Dropdowns, Text).</p>
+                            </div>
+                            <span class="badge badge-success badge-dot">Light Theme</span>
+                        </div>
+                        <div class="card-body space-y-7">
+                            @foreach($frontLightGroups as $groupName => $fields)
+                                <div>
+                                    <p class="flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-300 pb-2 border-b border-slate-100 dark:border-slate-800 mb-4">
+                                        <i class="ph-bold ph-paint-brush text-emerald-600"></i> {{ $groupName }}
+                                    </p>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+                                        @foreach($fields as [$key, $pickerId, $textId, $label, $hint, $default])
+                                            @php $val = $s($key, $default); @endphp
+                                            <div>
+                                                <label for="{{ $textId }}" class="form-label font-bold text-slate-800 dark:text-slate-200">{{ $label }}</label>
+                                                <div class="flex items-center gap-2">
+                                                    <input type="color" id="{{ $pickerId }}" value="{{ preg_match('/^#[0-9a-fA-F]{6}$/', $val) ? strtolower($val) : $default }}" aria-label="{{ $label }} picker"
+                                                           class="w-11 h-10 shrink-0 rounded-xl cursor-pointer border border-slate-300 dark:border-slate-600 p-1 bg-white dark:bg-slate-900">
+                                                    <input type="text" id="{{ $textId }}" name="{{ $key }}" value="{{ $val }}" maxlength="25" spellcheck="false"
+                                                           class="form-control font-mono uppercase font-bold text-slate-800 dark:text-slate-100{{ $errors->has($key) ? ' !border-rose-400' : '' }}">
+                                                </div>
+                                                <p class="form-hint">{{ $hint }}</p>
+                                                @error($key)<p class="text-xs font-semibold text-rose-600 mt-1">{{ $message }}</p>@enderror
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
-            @endforeach
-        </div>
 
-        {{-- TAB 3: DARK MODE COLORS --}}
-        <div id="tab-dark" class="settings-tab hidden space-y-6">
-            @foreach($frontDarkGroups as $groupTitle => $groupFields)
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="ph-duotone ph-moon-stars"></i> {{ $groupTitle }}</h3>
-                    </div>
-                    <div class="card-body grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        @foreach($groupFields as [$key, $pickerId, $textId, $label, $desc, $default])
-                            <div class="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-                                <label for="{{ $textId }}" class="form-label !mb-0.5 text-xs font-bold">{{ $label }}</label>
-                                <p class="text-[11px] text-slate-400 mb-2.5">{{ $desc }}</p>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" id="{{ $pickerId }}" value="{{ $s($key, $default) }}" class="w-9 h-9 rounded-lg border-0 p-0 cursor-pointer bg-transparent">
-                                    <input type="text" id="{{ $textId }}" name="{{ $key }}" value="{{ $s($key, $default) }}" maxlength="30" class="form-control font-mono uppercase text-xs !h-9">
+                {{-- Frontend Live Preview Widget --}}
+                <div class="space-y-5 min-w-0 xl:sticky xl:top-20">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="ph-duotone ph-laptop"></i> Storefront Preview</h3>
+                            <span class="text-[11px] font-bold text-emerald-600">Light Mode</span>
+                        </div>
+                        <div class="card-body p-0 overflow-hidden">
+                            <div class="p-3 border-b border-slate-100 dark:border-slate-800" style="background: var(--fp-topbar-bg, #064E3B); color: var(--fp-topbar-text, #ECFDF5);">
+                                <div class="flex items-center justify-between text-[10px] font-bold">
+                                    <span>⚡ 2-Hour Express Delivery</span>
+                                    <span>English · Gujarati</span>
                                 </div>
                             </div>
-                        @endforeach
+                            <div class="p-3.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2" style="background: var(--fp-header-bg, #FFFFFF);">
+                                <div class="flex items-center gap-1.5 font-extrabold text-sm" style="color: var(--fp-brand, #059669);">
+                                    <i class="ph-fill ph-basket text-lg"></i> FreshExpress
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold" style="background: var(--fp-btn-pri-bg, #059669); color: var(--fp-btn-pri-text, #FFFFFF);">
+                                    <i class="ph ph-shopping-cart-simple"></i> Cart (3)
+                                </span>
+                            </div>
+                            <div class="p-4 space-y-3" style="background: var(--fp-body-bg, #F6F8F7);">
+                                <div class="p-3 rounded-2xl border" style="background: var(--fp-card-bg, #FFFFFF); border-color: var(--fp-card-border, #E2E8F0);">
+                                    <span class="text-xs font-extrabold block" style="color: var(--fp-text-pri, #0F172A);">Organic Alphonso Mangoes</span>
+                                    <span class="text-[11px] block mt-0.5" style="color: var(--fp-text-mut, #64748B);">1 kg box · Fresh fruit</span>
+                                    <div class="flex items-center justify-between mt-3">
+                                        <span class="font-extrabold text-sm" style="color: var(--fp-brand, #059669);">₹350.00</span>
+                                        <button type="button" class="px-3 py-1.5 rounded-xl font-extrabold text-xs shadow-sm" style="background: var(--fp-btn-pri-bg, #059669); color: var(--fp-btn-pri-text, #FFFFFF);">
+                                            + Add to Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 text-center text-[10px]" style="background: var(--fp-footer-bg, #0F172A); color: var(--fp-footer-text, #94A3B8);">
+                                © 2026 FreshExpress Grocery Storefront
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body flex gap-2.5">
+                            <a href="{{ route('admin.settings.reset') }}" class="btn btn-outline flex-1 justify-center" data-confirm="Reset all storefront and admin colors to default?" data-confirm-button="Reset" data-confirm-danger><i class="ph ph-arrow-counter-clockwise"></i> Reset</a>
+                            <button type="submit" class="btn btn-primary flex-1 justify-center"><i class="ph ph-floppy-disk"></i> Save Colors</button>
+                        </div>
                     </div>
                 </div>
-            @endforeach
+            </div>
         </div>
 
+        {{-- ============================== TAB 3: DARK MODE COLORS ============================== --}}
+        <div id="tabFrontDarkTheme" class="tab-pane hidden space-y-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+                <div class="xl:col-span-2 space-y-5 min-w-0">
+
+                    {{-- Dark Mode Info --}}
+                    <div class="card border-l-4 border-indigo-500">
+                        <div class="card-body flex items-start gap-3">
+                            <i class="ph-duotone ph-moon-stars text-2xl text-indigo-500 shrink-0"></i>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white">Independent Dark Mode Color Customization</h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">When users toggle Dark Mode on the storefront, these dedicated dark surfaces, borders, text, and button tones are applied automatically.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Dark Mode Color Groups --}}
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title"><i class="ph-duotone ph-moon"></i> Dark Mode Colors</h3>
+                                <p class="card-subtitle">Fine-tune dark backgrounds, cards, inputs, buttons, and text highlights.</p>
+                            </div>
+                            <span class="badge badge-neutral font-bold">Dark Palette</span>
+                        </div>
+                        <div class="card-body space-y-7">
+                            @foreach($frontDarkGroups as $groupName => $fields)
+                                <div>
+                                    <p class="flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-300 pb-2 border-b border-slate-100 dark:border-slate-800 mb-4">
+                                        <i class="ph-bold ph-moon-stars text-indigo-500"></i> {{ $groupName }}
+                                    </p>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+                                        @foreach($fields as [$key, $pickerId, $textId, $label, $hint, $default])
+                                            @php $val = $s($key, $default); @endphp
+                                            <div>
+                                                <label for="{{ $textId }}" class="form-label font-bold text-slate-800 dark:text-slate-200">{{ $label }}</label>
+                                                <div class="flex items-center gap-2">
+                                                    <input type="color" id="{{ $pickerId }}" value="{{ preg_match('/^#[0-9a-fA-F]{6}$/', $val) ? strtolower($val) : $default }}" aria-label="{{ $label }} picker"
+                                                           class="w-11 h-10 shrink-0 rounded-xl cursor-pointer border border-slate-300 dark:border-slate-600 p-1 bg-white dark:bg-slate-900">
+                                                    <input type="text" id="{{ $textId }}" name="{{ $key }}" value="{{ $val }}" maxlength="25" spellcheck="false"
+                                                           class="form-control font-mono uppercase font-bold text-slate-800 dark:text-slate-100{{ $errors->has($key) ? ' !border-rose-400' : '' }}">
+                                                </div>
+                                                <p class="form-hint">{{ $hint }}</p>
+                                                @error($key)<p class="text-xs font-semibold text-rose-600 mt-1">{{ $message }}</p>@enderror
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Dark Live Preview Widget --}}
+                <div class="space-y-5 min-w-0 xl:sticky xl:top-20">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="ph-duotone ph-moon-stars"></i> Storefront Preview</h3>
+                            <span class="text-[11px] font-bold text-indigo-400">Dark Mode</span>
+                        </div>
+                        <div class="card-body p-0 overflow-hidden rounded-b-2xl border border-slate-800">
+                            <div class="p-3 border-b border-slate-800" style="background: var(--fpd-topbar-bg, #020617); color: var(--fpd-topbar-text, #94A3B8);">
+                                <div class="flex items-center justify-between text-[10px] font-bold">
+                                    <span>⚡ 2-Hour Express Delivery</span>
+                                    <span>English · Gujarati</span>
+                                </div>
+                            </div>
+                            <div class="p-3.5 border-b border-slate-800 flex items-center justify-between gap-2" style="background: var(--fpd-header-bg, #0B1120);">
+                                <div class="flex items-center gap-1.5 font-extrabold text-sm" style="color: var(--fpd-brand, #34D399);">
+                                    <i class="ph-fill ph-basket text-lg"></i> FreshExpress
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold" style="background: var(--fpd-btn-pri-bg, #059669); color: var(--fpd-btn-pri-text, #FFFFFF);">
+                                    <i class="ph ph-shopping-cart-simple"></i> Cart (3)
+                                </span>
+                            </div>
+                            <div class="p-4 space-y-3" style="background: var(--fpd-body-bg, #020617);">
+                                <div class="p-3 rounded-2xl border" style="background: var(--fpd-card-bg, #0F172A); border-color: var(--fpd-card-border, #1E293B);">
+                                    <span class="text-xs font-extrabold block" style="color: var(--fpd-text-pri, #F1F5F9);">Fresh Malai Paneer</span>
+                                    <span class="text-[11px] block mt-0.5" style="color: var(--fpd-text-mut, #94A3B8);">200g · Dairy & Eggs</span>
+                                    <div class="flex items-center justify-between mt-3">
+                                        <span class="font-extrabold text-sm" style="color: var(--fpd-brand, #34D399);">₹85.00</span>
+                                        <button type="button" class="px-3 py-1.5 rounded-xl font-extrabold text-xs shadow-sm" style="background: var(--fpd-btn-pri-bg, #059669); color: var(--fpd-btn-pri-text, #FFFFFF);">
+                                            + Add to Cart
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3 text-center text-[10px]" style="background: var(--fpd-footer-bg, #020617); color: var(--fpd-footer-text, #64748B);">
+                                © 2026 FreshExpress Grocery Storefront
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body flex gap-2.5">
+                            <a href="{{ route('admin.settings.reset') }}" class="btn btn-outline flex-1 justify-center" data-confirm="Reset all colors to system defaults?" data-confirm-button="Reset" data-confirm-danger><i class="ph ph-arrow-counter-clockwise"></i> Reset</a>
+                            <button type="submit" class="btn btn-primary flex-1 justify-center"><i class="ph ph-floppy-disk"></i> Save Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
     </form>
-
 @endsection
 
 @push('styles')
 <style>
-    .tab-btn { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
-    .tab-btn.is-active { background: var(--btn-accent-bg); color: #fff; border-color: var(--btn-accent-bg); }
-    .preset-card:hover { box-shadow: 0 8px 24px -8px rgba(0,0,0,.15); transform: translateY(-1px); }
+    .tab-btn.is-active {
+        border-color: var(--theme-primary, #059669) !important;
+        color: var(--theme-primary, #059669) !important;
+    }
+    .mode-tile:has(input:checked) { border-color: #10b981; background: rgba(16,185,129,.06); }
+    .dark .mode-tile:has(input:checked) { border-color: rgba(16,185,129,.55); background: rgba(16,185,129,.1); }
+
+    .pv-shell { display: flex; height: 230px; border-radius: 14px; overflow: hidden; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 11px; }
+    .dark .pv-shell { border-color: #334155; background: #0b1220; }
+    .pv-side { width: 46%; padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; background: var(--pv-sidebar-bg, var(--sidebar-bg)); color: var(--pv-sidebar-text, var(--sidebar-text)); }
+    .pv-brand { display: flex; align-items: center; gap: 6px; padding: 2px 4px 8px; font-weight: 800; font-size: 11.5px; min-width: 0; }
+    .pv-brand-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pv-logo { width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--pv-active, var(--sidebar-active)); color: var(--pv-active-text, var(--sidebar-active-text)); font-size: 13px; }
+    .pv-item { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 8px; font-weight: 600; opacity: .78; white-space: nowrap; overflow: hidden; }
+    .pv-item i { font-size: 13px; }
+    .pv-item.is-active { opacity: 1; background: var(--pv-active, var(--sidebar-active)); color: var(--pv-active-text, var(--sidebar-active-text)); }
+    .pv-main { flex: 1; padding: 14px 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .pv-line { display: block; height: 8px; border-radius: 99px; background: #e2e8f0; }
+    .dark .pv-line { background: #1e293b; }
+    .pv-link { font-weight: 700; color: var(--pv-hover, var(--theme-hover)); text-decoration: underline; text-underline-offset: 2px; }
+    .dark .pv-link { filter: brightness(1.6); }
+    .pv-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .pv-btn { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border-radius: 8px; font-weight: 700; cursor: default; transition: background .15s; }
+    .pv-btn-primary { background: var(--pv-btn-bg, var(--btn-primary-bg)); color: var(--pv-btn-text, var(--btn-primary-text)); }
+    .pv-btn-primary:hover { background: var(--pv-btn-hover, var(--btn-primary-hover)); }
+    .pv-btn-accent { background: var(--pv-accent-bg, var(--btn-accent-bg)); color: var(--pv-accent-text, var(--btn-accent-text)); }
+    .pv-input { display: block; height: 26px; margin-top: auto; border-radius: 8px; background: #fff; border: 1.5px solid var(--pv-brand, var(--theme-primary)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pv-brand, var(--theme-primary)) 18%, transparent); }
+    .dark .pv-input { background: #0f172a; }
 </style>
 @endpush
 
@@ -362,36 +595,82 @@
 <script>
 (function () {
     const root = document.documentElement;
-    const HEX = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
+    const HEX = /^#[0-9A-F]{6}$/i;
+    const rgb = (h) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+    const contrast = (h) => { const [r, g, b] = rgb(h); return ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.6 ? '#0f172a' : '#ffffff'; };
 
-    function rgb(hex) {
-        let h = hex.replace('#', '').trim();
-        if (h.length === 3) h = h.split('').map(c => c + c).join('');
-        if (!/^[0-9a-fA-F]{6}$/.test(h)) return [15, 23, 42];
-        return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
-    }
+    // Tab switcher
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('is-active', 'border-emerald-600', 'text-emerald-600', 'dark:text-emerald-400');
+                b.classList.add('border-transparent', 'text-slate-500');
+            });
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
 
-    function contrast(hex) {
-        const [r, g, b] = rgb(hex);
-        return ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.6 ? '#0F172A' : '#FFFFFF';
-    }
+            btn.classList.add('is-active', 'border-emerald-600', 'text-emerald-600', 'dark:text-emerald-400');
+            btn.classList.remove('border-transparent', 'text-slate-500');
 
+            const targetId = btn.getAttribute('data-tab-target');
+            const targetPane = document.getElementById(targetId);
+            if (targetPane) targetPane.classList.remove('hidden');
+        });
+    });
+
+    // Admin field key -> CSS variables
     const adminVars = {
-        btn_primary_bg:       (v) => ({ '--btn-primary-bg': v, '--btn-primary-hover': v }),
-        btn_primary_text:     (v) => ({ '--btn-primary-text': v }),
-        btn_accent_bg:        (v) => ({ '--btn-accent-bg': v }),
-        btn_accent_text:      (v) => ({ '--btn-accent-text': v }),
-        sidebar_bg_color:     (v) => ({ '--sidebar-bg': v, '--c-sidebar-text': rgb(contrast(v)).join(' ') }),
-        sidebar_active_color: (v) => ({ '--sidebar-active': v, '--sidebar-active-text': contrast(v) }),
-        sidebar_text_color:   (v) => ({ '--sidebar-text': v }),
-        theme_primary_color:  (v) => ({ '--theme-primary': v, '--c-primary': rgb(v).join(' ') }),
-        theme_hover_color:    (v) => ({ '--theme-hover': v }),
+        btn_primary_bg:       (v) => ({ '--pv-btn-bg': v, '--btn-primary-bg': v }),
+        btn_primary_text:     (v) => ({ '--pv-btn-text': v, '--btn-primary-text': v }),
+        btn_primary_hover:    (v) => ({ '--pv-btn-hover': v, '--btn-primary-hover': v }),
+        btn_accent_bg:        (v) => ({ '--pv-accent-bg': v, '--btn-accent-bg': v }),
+        btn_accent_text:      (v) => ({ '--pv-accent-text': v, '--btn-accent-text': v }),
+        sidebar_bg_color:     (v) => ({ '--pv-sidebar-bg': v, '--sidebar-bg': v }),
+        sidebar_active_color: (v) => ({ '--pv-active': v, '--pv-active-text': contrast(v), '--sidebar-active': v, '--sidebar-active-text': contrast(v) }),
+        sidebar_text_color:   (v) => ({ '--pv-sidebar-text': v, '--sidebar-text': v, '--c-sidebar-text': rgb(v).join(' ') }),
+        theme_primary_color:  (v) => ({ '--pv-brand': v, '--theme-primary': v, '--c-primary': rgb(v).join(' ') }),
+        theme_hover_color:    (v) => ({ '--pv-hover': v, '--theme-hover': v }),
+    };
+
+    // Frontend live preview variables
+    const frontVars = {
+        front_brand_primary:  (v) => ({ '--fp-brand': v }),
+        front_topbar_bg:      (v) => ({ '--fp-topbar-bg': v }),
+        front_topbar_text:    (v) => ({ '--fp-topbar-text': v }),
+        front_header_bg:      (v) => ({ '--fp-header-bg': v }),
+        front_body_bg:        (v) => ({ '--fp-body-bg': v }),
+        front_card_bg:        (v) => ({ '--fp-card-bg': v }),
+        front_card_border:    (v) => ({ '--fp-card-border': v }),
+        front_footer_bg:      (v) => ({ '--fp-footer-bg': v }),
+        front_footer_text:    (v) => ({ '--fp-footer-text': v }),
+        front_text_primary:   (v) => ({ '--fp-text-pri': v }),
+        front_text_muted:     (v) => ({ '--fp-text-mut': v }),
+        front_btn_primary_bg: (v) => ({ '--fp-btn-pri-bg': v }),
+        front_btn_primary_text: (v) => ({ '--fp-btn-pri-text': v }),
+        
+        // Dark
+        front_dark_brand_primary:  (v) => ({ '--fpd-brand': v }),
+        front_dark_topbar_bg:      (v) => ({ '--fpd-topbar-bg': v }),
+        front_dark_topbar_text:    (v) => ({ '--fpd-topbar-text': v }),
+        front_dark_header_bg:      (v) => ({ '--fpd-header-bg': v }),
+        front_dark_body_bg:        (v) => ({ '--fpd-body-bg': v }),
+        front_dark_card_bg:        (v) => ({ '--fpd-card-bg': v }),
+        front_dark_card_border:    (v) => ({ '--fpd-card-border': v }),
+        front_dark_footer_bg:      (v) => ({ '--fpd-footer-bg': v }),
+        front_dark_footer_text:    (v) => ({ '--fpd-footer-text': v }),
+        front_dark_text_primary:   (v) => ({ '--fpd-text-pri': v }),
+        front_dark_text_muted:     (v) => ({ '--fpd-text-mut': v }),
+        front_dark_btn_primary_bg: (v) => ({ '--fpd-btn-pri-bg': v }),
+        front_dark_btn_primary_text: (v) => ({ '--fpd-btn-pri-text': v }),
     };
 
     function preview(key, val) {
         if (!HEX.test(val)) return;
         if (adminVars[key]) {
             const map = adminVars[key](val);
+            Object.keys(map).forEach(k => root.style.setProperty(k, map[k]));
+        }
+        if (frontVars[key]) {
+            const map = frontVars[key](val);
             Object.keys(map).forEach(k => root.style.setProperty(k, map[k]));
         }
     }
@@ -420,44 +699,86 @@
         if (window.toastr) toastr.success('Admin preset applied. Save settings to make permanent.');
     };
 
-    // Tab switching
-    document.querySelectorAll('[data-target-tab]').forEach(function (tabBtn) {
-        tabBtn.addEventListener('click', function () {
-            document.querySelectorAll('[data-target-tab]').forEach(b => b.classList.remove('is-active'));
-            document.querySelectorAll('.settings-tab').forEach(t => t.classList.add('hidden'));
+    window.applyFrontendPreset = function (lightColors, darkColors) {
+        // Light mapping: [brand_primary, brand_hover, brand_light, accent, btn_pri_bg, topbar_bg, body_bg, card_bg, card_border, footer_bg]
+        setFieldVal('front_brand_primary', lightColors[0]);
+        setFieldVal('front_brand_hover', lightColors[1]);
+        setFieldVal('front_brand_light', lightColors[2]);
+        setFieldVal('front_accent_color', lightColors[3]);
+        setFieldVal('front_btn_primary_bg', lightColors[4]);
+        setFieldVal('front_btn_primary_text', '#FFFFFF');
+        setFieldVal('front_btn_primary_hover', lightColors[1]);
+        setFieldVal('front_btn_accent_bg', lightColors[3]);
+        setFieldVal('front_btn_accent_text', '#FFFFFF');
+        setFieldVal('front_topbar_bg', lightColors[5]);
+        setFieldVal('front_topbar_text', '#ECFDF5');
+        setFieldVal('front_header_bg', '#FFFFFF');
+        setFieldVal('front_body_bg', lightColors[6]);
+        setFieldVal('front_card_bg', lightColors[7]);
+        setFieldVal('front_card_border', lightColors[8]);
+        setFieldVal('front_footer_bg', lightColors[9]);
+        setFieldVal('front_footer_text', '#94A3B8');
+        setFieldVal('front_text_primary', '#0F172A');
+        setFieldVal('front_text_muted', '#64748B');
+        setFieldVal('front_input_bg', '#FFFFFF');
+        setFieldVal('front_input_border', lightColors[8]);
+        setFieldVal('front_dropdown_bg', '#FFFFFF');
 
-            tabBtn.classList.add('is-active');
-            const target = document.getElementById(tabBtn.getAttribute('data-target-tab'));
-            if (target) target.classList.remove('hidden');
+        // Dark mapping
+        if (darkColors && darkColors.length >= 10) {
+            setFieldVal('front_dark_brand_primary', darkColors[0]);
+            setFieldVal('front_dark_brand_hover', darkColors[1]);
+            setFieldVal('front_dark_brand_light', darkColors[2]);
+            setFieldVal('front_dark_accent_color', darkColors[3]);
+            setFieldVal('front_dark_btn_primary_bg', darkColors[4]);
+            setFieldVal('front_dark_btn_primary_text', '#FFFFFF');
+            setFieldVal('front_dark_btn_primary_hover', darkColors[0]);
+            setFieldVal('front_dark_body_bg', darkColors[5]);
+            setFieldVal('front_dark_card_bg', darkColors[6]);
+            setFieldVal('front_dark_card_border', darkColors[7]);
+            setFieldVal('front_dark_header_bg', darkColors[8]);
+            setFieldVal('front_dark_topbar_bg', darkColors[5]);
+            setFieldVal('front_dark_topbar_text', '#94A3B8');
+            setFieldVal('front_dark_footer_bg', darkColors[5]);
+            setFieldVal('front_dark_footer_text', '#64748B');
+            setFieldVal('front_dark_text_primary', darkColors[9]);
+            setFieldVal('front_dark_text_muted', '#94A3B8');
+            setFieldVal('front_dark_input_bg', '#0B1324');
+            setFieldVal('front_dark_input_border', darkColors[7]);
+            setFieldVal('front_dark_dropdown_bg', darkColors[6]);
+        }
+
+        if (window.toastr) toastr.success('Frontend palette applied. Save settings to apply live.');
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('#settingsForm input[type="color"]').forEach(function (picker) {
+            const text = picker.parentElement.querySelector('input[type="text"]');
+            if (!text) return;
+            picker.addEventListener('input', function () {
+                text.value = picker.value.toUpperCase();
+                preview(text.name, picker.value);
+            });
+            text.addEventListener('input', function () {
+                const v = text.value.trim();
+                if (HEX.test(v)) {
+                    picker.value = v.toLowerCase();
+                    preview(text.name, v);
+                }
+            });
+            if (HEX.test(text.value.trim())) preview(text.name, text.value.trim());
         });
+
+        const storeName = document.getElementById('storeName');
+        if (storeName) {
+            storeName.addEventListener('input', function () {
+                const v = storeName.value.trim() || 'Fresh Express';
+                const pv = document.getElementById('pvStoreName');
+                if (pv) pv.textContent = v;
+                document.querySelectorAll('.sb-brand-name').forEach(el => { el.textContent = v; });
+            });
+        }
     });
-
-    // Color pickers synchronization
-    document.querySelectorAll('#settingsForm input[type="color"]').forEach(function (picker) {
-        const text = picker.parentElement.querySelector('input[type="text"]');
-        if (!text) return;
-        picker.addEventListener('input', function () {
-            text.value = picker.value.toUpperCase();
-            preview(text.name, picker.value);
-        });
-        text.addEventListener('input', function () {
-            const v = text.value.trim();
-            if (HEX.test(v)) {
-                picker.value = v.toLowerCase();
-                preview(text.name, v);
-            }
-        });
-    });
-
-    const storeName = document.getElementById('storeName');
-    if (storeName) {
-        storeName.addEventListener('input', function () {
-            const v = storeName.value.trim() || 'Fresh Express';
-            const pv = document.getElementById('pvStoreName');
-            if (pv) pv.innerHTML = '<i class="ph-fill ph-basket"></i> ' + v;
-            document.querySelectorAll('.sb-brand-name').forEach(el => { el.textContent = v; });
-        });
-    }
 })();
 </script>
 @endpush
