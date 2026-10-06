@@ -144,6 +144,10 @@
     </style>
     <link rel="stylesheet" href="{{ asset('assets/shared/fx-select.css') }}?v=3.1.0">
     <link rel="stylesheet" href="{{ asset('assets/admin/admin.css') }}?v=2.1.0">
+    
+    {{-- DataTables Styles --}}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    
     @stack('styles')
 </head>
 <body class="admin-body">
@@ -160,7 +164,7 @@
                     <span class="sb-brand-sub">{{ __('Admin Console') }}</span>
                 </span>
             </a>
-            <button type="button" class="sb-close" data-sidebar-close aria-label="Close menu"><i class="ph ph-x"></i></button>
+            <button type="button" class="sb-close" data-sidebar-toggle aria-label="Close menu"><i class="ph ph-x"></i></button>
         </div>
 
         <div class="sb-search">
@@ -200,9 +204,9 @@
                     <span class="sb-user-name">{{ $authUser->name ?? 'Admin User' }}</span>
                     <span class="sb-user-role">{{ $authUser->roleModel->display_name ?? ucfirst($authUser->role ?? 'Staff') }}</span>
                 </div>
-                <form action="{{ route('admin.logout') }}" method="POST" class="inline">
+                <form action="{{ route('admin.logout') }}" method="POST" class="sb-logout-form">
                     @csrf
-                    <button type="submit" class="sb-logout-btn" title="{{ __('Sign out') }}" aria-label="{{ __('Sign out') }}">
+                    <button type="submit" class="sb-logout" title="{{ __('Sign out') }}" aria-label="{{ __('Sign out') }}">
                         <i class="ph-bold ph-sign-out"></i>
                     </button>
                 </form>
@@ -210,88 +214,82 @@
         </div>
     </aside>
 
-    <div class="sb-backdrop" data-sidebar-backdrop tabindex="-1" aria-hidden="true"></div>
+    <div class="sidebar-backdrop" data-sidebar-toggle tabindex="-1" aria-hidden="true"></div>
 
     {{-- ============================== MAIN CONTENT WRAPPER ============================== --}}
-    <div class="app-layout">
+    <div class="app-main">
 
         {{-- Top App Header --}}
-        <header class="app-header">
-            <div class="header-left">
-                <button type="button" class="header-btn md:hidden" data-sidebar-toggle aria-label="Toggle menu">
+        <header class="app-topbar">
+            <div class="flex items-center gap-2">
+                <button type="button" class="tb-btn lg:hidden" data-sidebar-toggle aria-label="Toggle menu">
                     <i class="ph-bold ph-list text-lg"></i>
                 </button>
-                <button type="button" class="header-btn hidden md:inline-flex" data-sidebar-collapse title="Collapse sidebar (Ctrl+[)">
+                <button type="button" class="tb-btn hidden lg:inline-flex" data-sidebar-toggle title="Toggle sidebar">
                     <i class="ph-bold ph-sidebar text-lg"></i>
                 </button>
 
-                <nav class="breadcrumb-trail" aria-label="Breadcrumb">
-                    <ol class="flex items-center gap-1.5 text-[12.5px] font-medium text-slate-500 dark:text-slate-400">
-                        <li>
-                            <a href="{{ route('admin.dashboard') }}" class="hover:text-slate-900 dark:hover:text-white transition inline-flex items-center gap-1">
-                                <i class="ph ph-house text-sm"></i>
-                            </a>
-                        </li>
-                        @if($activeGroup && $activeGroup !== 'Overview')
-                            <li><i class="ph ph-caret-right text-[10px] text-slate-400"></i></li>
-                            <li class="font-semibold text-slate-700 dark:text-slate-300">{{ $activeGroup }}</li>
-                        @endif
-                        @if($activeItem)
-                            <li><i class="ph ph-caret-right text-[10px] text-slate-400"></i></li>
-                            <li class="font-bold text-slate-900 dark:text-white truncate max-w-[200px]" aria-current="page">{{ $activeItem['label'] }}</li>
-                        @endif
-                    </ol>
+                <nav class="tb-breadcrumb flex items-center" aria-label="Breadcrumb">
+                    <a href="{{ route('admin.dashboard') }}" class="tb-crumb" title="Dashboard">
+                        <i class="ph-duotone ph-squares-four"></i>
+                    </a>
+                    @if($activeGroup && $activeGroup !== 'Overview')
+                        <i class="ph ph-caret-right tb-crumb-sep"></i>
+                        <span class="tb-crumb">{{ $activeGroup }}</span>
+                    @endif
+                    @if($activeItem)
+                        <i class="ph ph-caret-right tb-crumb-sep"></i>
+                        <span class="tb-crumb is-current">{{ $activeItem['label'] }}</span>
+                    @endif
                 </nav>
             </div>
 
-            <div class="header-center">
-                <button type="button" class="command-trigger" data-palette-open>
+            <div class="flex items-center gap-2">
+                <button type="button" class="tb-search" data-palette-open aria-label="Search">
                     <i class="ph ph-magnifying-glass"></i>
-                    <span>{{ __('Search or jump to…') }}</span>
-                    <kbd class="command-kbd">Ctrl K</kbd>
+                    <span class="hidden sm:inline">{{ __('Search…') }}</span>
+                    <kbd class="hidden lg:inline-flex">Ctrl K</kbd>
                 </button>
-            </div>
 
-            <div class="header-right">
                 {{-- Theme Switcher --}}
-                <div class="relative" id="themeMenuRoot">
-                    <button type="button" class="header-btn" id="themeDropdownBtn" title="{{ __('Switch theme') }}" aria-label="{{ __('Switch theme') }}" aria-expanded="false">
-                        <i class="ph ph-sun text-lg dark:hidden"></i>
-                        <i class="ph ph-moon-stars text-lg hidden dark:inline"></i>
+                <div class="relative" data-dropdown>
+                    <button type="button" class="tb-btn" data-dropdown-trigger aria-expanded="false" title="{{ __('Switch theme') }}">
+                        <i class="ph ph-sun text-lg" id="themeCurrentIcon"></i>
                     </button>
-                    <div class="dropdown-panel right-0 w-44 hidden" id="themeDropdownPanel">
-                        <button type="button" class="dropdown-item" data-set-theme="light"><i class="ph ph-sun"></i> {{ __('Light') }}</button>
-                        <button type="button" class="dropdown-item" data-set-theme="dark"><i class="ph ph-moon-stars"></i> {{ __('Dark') }}</button>
-                        <button type="button" class="dropdown-item" data-set-theme="system"><i class="ph ph-desktop"></i> {{ __('System') }}</button>
+                    <div class="tb-menu w-44" data-dropdown-menu>
+                        <div class="tb-menu-title">{{ __('Theme') }}</div>
+                        <button type="button" class="tb-menu-item" data-theme-set="light"><i class="ph ph-sun"></i> {{ __('Light') }}<i class="ph-bold ph-check tm-check ml-auto"></i></button>
+                        <button type="button" class="tb-menu-item" data-theme-set="dark"><i class="ph ph-moon-stars"></i> {{ __('Dark') }}<i class="ph-bold ph-check tm-check ml-auto"></i></button>
+                        <button type="button" class="tb-menu-item" data-theme-set="system"><i class="ph ph-desktop"></i> {{ __('System') }}<i class="ph-bold ph-check tm-check ml-auto"></i></button>
                     </div>
                 </div>
 
                 {{-- Fullscreen toggle --}}
-                <button type="button" class="header-btn hidden sm:inline-flex" data-fullscreen-toggle title="{{ __('Fullscreen') }}" aria-label="{{ __('Fullscreen') }}">
+                <button type="button" class="tb-btn hidden sm:inline-flex" data-fullscreen title="{{ __('Fullscreen') }}">
                     <i class="ph ph-corners-out text-lg"></i>
                 </button>
 
-                {{-- User menu --}}
-                <div class="relative" id="userMenuRoot">
-                    <button type="button" class="header-user-btn" id="userMenuBtn" aria-expanded="false">
-                        <span class="sb-avatar !w-8 !h-8 !text-xs">{{ $initials }}</span>
-                        <div class="hidden xl:block text-left leading-tight">
+                {{-- User profile dropdown menu --}}
+                <div class="relative" data-dropdown>
+                    <button type="button" class="tb-profile" data-dropdown-trigger aria-expanded="false">
+                        <span class="tb-avatar">{{ $initials }}</span>
+                        <span class="hidden xl:block text-left leading-tight">
                             <span class="block text-xs font-bold text-slate-900 dark:text-white truncate max-w-[120px]">{{ $authUser->name ?? 'Admin' }}</span>
-                            <span class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{{ $authUser->roleModel->display_name ?? 'Super Admin' }}</span>
-                        </div>
+                            <span class="block text-[10.5px] font-semibold text-slate-400">{{ $authUser->roleModel->display_name ?? ucfirst($authUser->role ?? 'Staff') }}</span>
+                        </span>
                         <i class="ph ph-caret-down text-xs text-slate-400"></i>
                     </button>
-                    <div class="dropdown-panel right-0 w-56 hidden" id="userMenuPanel">
-                        <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                    <div class="tb-menu w-56" data-dropdown-menu>
+                        <div class="p-2.5 border-b border-slate-100 dark:border-slate-800">
                             <p class="text-xs font-bold text-slate-900 dark:text-white">{{ $authUser->name }}</p>
                             <p class="text-[11px] text-slate-400 truncate">{{ $authUser->email ?? $authUser->phone }}</p>
                         </div>
                         @if($can('manage_settings'))
-                            <a href="{{ route('admin.settings.index') }}" class="dropdown-item"><i class="ph ph-gear-six"></i> {{ __('Settings') }}</a>
+                            <a href="{{ route('admin.settings.index') }}" class="tb-menu-item mt-1"><i class="ph ph-gear-six"></i> {{ __('Settings') }}</a>
                         @endif
                         <form action="{{ route('admin.logout') }}" method="POST">
                             @csrf
-                            <button type="submit" class="dropdown-item text-rose-600 dark:text-rose-400 hover:!bg-rose-50 dark:hover:!bg-rose-500/10">
+                            <button type="submit" class="tb-menu-item text-rose-600 dark:text-rose-400 hover:!bg-rose-50 dark:hover:!bg-rose-500/10">
                                 <i class="ph ph-sign-out"></i> {{ __('Sign out') }}
                             </button>
                         </form>
@@ -303,24 +301,21 @@
         {{-- Main Page Body --}}
         <main class="app-content" id="mainContent">
             @if(session('success'))
-                <div class="flash-banner flash-success" role="status">
-                    <i class="ph-fill ph-check-circle text-lg shrink-0"></i>
-                    <span class="flex-1">{{ session('success') }}</span>
-                    <button type="button" class="flash-close" data-dismiss-alert aria-label="Dismiss"><i class="ph ph-x"></i></button>
+                <div class="mb-5 flex items-center justify-between p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-200 text-sm font-semibold shadow-xs" role="status">
+                    <div class="flex items-center gap-2.5">
+                        <i class="ph-fill ph-check-circle text-emerald-500 text-lg shrink-0"></i>
+                        <span>{{ session('success') }}</span>
+                    </div>
+                    <button type="button" onclick="this.parentElement.remove()" class="text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-300 p-1" aria-label="Close"><i class="ph ph-x"></i></button>
                 </div>
             @endif
             @if(session('error'))
-                <div class="flash-banner flash-error" role="alert">
-                    <i class="ph-fill ph-warning-circle text-lg shrink-0"></i>
-                    <span class="flex-1">{{ session('error') }}</span>
-                    <button type="button" class="flash-close" data-dismiss-alert aria-label="Dismiss"><i class="ph ph-x"></i></button>
-                </div>
-            @endif
-            @if(session('info'))
-                <div class="flash-banner flash-info" role="status">
-                    <i class="ph-fill ph-info text-lg shrink-0"></i>
-                    <span class="flex-1">{{ session('info') }}</span>
-                    <button type="button" class="flash-close" data-dismiss-alert aria-label="Dismiss"><i class="ph ph-x"></i></button>
+                <div class="mb-5 flex items-center justify-between p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-200 text-sm font-semibold shadow-xs" role="alert">
+                    <div class="flex items-center gap-2.5">
+                        <i class="ph-fill ph-warning-circle text-rose-500 text-lg shrink-0"></i>
+                        <span>{{ session('error') }}</span>
+                    </div>
+                    <button type="button" onclick="this.parentElement.remove()" class="text-rose-600 hover:text-rose-800 dark:hover:text-rose-300 p-1" aria-label="Close"><i class="ph ph-x"></i></button>
                 </div>
             @endif
 
@@ -358,6 +353,8 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script>
         window.__FX_PALETTE__ = @json($paletteItems);
     </script>
