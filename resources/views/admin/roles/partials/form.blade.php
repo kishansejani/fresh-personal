@@ -3,11 +3,9 @@
     $role = $role ?? null;
     $selected = array_map('intval', (array) old('permissions', $rolePermissions ?? []));
     $groupMeta = [
-        'catalog'  => ['Catalog',            'package',               'Products, categories, stock and banners'],
-        'sales'    => ['Sales',              'shopping-cart-simple',  'Orders, invoices and offers'],
-        'content'  => ['Content',            'article',               'Static storefront pages'],
-        'security' => ['Users & security',   'shield-check',          'Staff accounts, roles and permissions'],
-        'settings' => ['Settings',           'gear-six',              'Theme and system configuration'],
+        'administration' => ['Administration',   'shield-check',          'Users, roles and system settings'],
+        'security'       => ['Users & security', 'shield-check',          'Staff accounts, roles and permissions'],
+        'settings'       => ['Settings',         'gear-six',              'Theme and system configuration'],
     ];
     $totalPerms = $permissions->flatten()->count();
     $isSuper = $role && $role->name === 'super_admin';

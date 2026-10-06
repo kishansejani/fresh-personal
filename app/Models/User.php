@@ -16,8 +16,6 @@ class User extends Authenticatable
         'phone',
         'email',
         'password',
-        'otp',
-        'otp_expires_at',
         'role',
         'role_id',
         'language',
@@ -28,14 +26,12 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'otp',
     ];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'otp_expires_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
@@ -54,7 +50,6 @@ class User extends Authenticatable
         if ($this->roleModel && in_array($this->roleModel->name, ['admin', 'super_admin'])) {
             return true;
         }
-        // Custom staff roles (e.g. "manager", "packer") get panel access when they carry at least one permission
         if ($this->roleModel && !in_array($this->roleModel->name, ['user', 'customer'])) {
             return $this->roleModel->permissions()->exists();
         }
@@ -75,30 +70,5 @@ class User extends Authenticatable
             return $this->roleModel->hasPermission($permission);
         }
         return false;
-    }
-
-    public function addresses()
-    {
-        return $this->hasMany(Address::class);
-    }
-
-    public function orders()
-    {
-        return $this->hasMany(Order::class)->latest();
-    }
-
-    public function wishlists()
-    {
-        return $this->hasMany(Wishlist::class);
-    }
-
-    public function wishlistProducts()
-    {
-        return $this->belongsToMany(Product::class, 'wishlists', 'user_id', 'product_id')->withTimestamps();
-    }
-
-    public function cartItems()
-    {
-        return $this->hasMany(CartItem::class);
     }
 }

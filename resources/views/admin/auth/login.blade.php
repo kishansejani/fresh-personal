@@ -1,15 +1,15 @@
-@extends('frontend.layouts.auth')
+@extends('admin.layouts.auth')
 
-@section('title', 'Admin sign in')
+@section('title', 'Admin Sign In')
 
 @section('panel')
-    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 ring-1 ring-white/15 text-[11px] font-bold uppercase tracking-wider text-brand-200"><i class="ph-fill ph-shield-check"></i>Secure staff access</span>
-    <h1 class="mt-5 text-4xl xl:text-[2.75rem] font-extrabold leading-[1.1] tracking-tight">Run every order, shelf and slot from one place.</h1>
-    <p class="mt-4 text-[15px] text-slate-300 leading-relaxed">Manage products and stock, dispatch 2-hour express deliveries, publish offers and print invoices — in English and ગુજરાતી.</p>
+    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 ring-1 ring-white/15 text-[11px] font-bold uppercase tracking-wider text-emerald-200"><i class="ph-fill ph-shield-check"></i>Secure Staff Access</span>
+    <h1 class="mt-5 text-4xl xl:text-[2.75rem] font-extrabold leading-[1.1] tracking-tight">Streamlined Admin & Role Management.</h1>
+    <p class="mt-4 text-[15px] text-slate-300 leading-relaxed">Manage users, configure granular roles & permissions, and customize admin portal settings seamlessly.</p>
     <ul class="mt-8 grid grid-cols-2 gap-3 text-[13px]">
-        @foreach([['ph-package', 'Orders & dispatch'], ['ph-stack', 'Stock control'], ['ph-seal-percent', 'Offers & coupons'], ['ph-chart-line-up', 'Sales insights']] as [$ic, $label])
+        @foreach([['ph-users-three', 'Users & Staff'], ['ph-shield-check', 'Roles & Permissions'], ['ph-gear-six', 'System Settings'], ['ph-palette', 'Theme Customizer']] as [$ic, $label])
             <li class="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 ring-1 ring-white/10">
-                <span class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-300 flex items-center justify-center"><i class="ph-duotone {{ $ic }} text-lg"></i></span>
+                <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center"><i class="ph-duotone {{ $ic }} text-lg"></i></span>
                 <span class="font-semibold text-slate-200">{{ $label }}</span>
             </li>
         @endforeach
@@ -18,9 +18,9 @@
 
 @section('content')
     <div>
-        <span class="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center text-2xl"><i class="ph-duotone ph-lock-key"></i></span>
-        <h2 class="mt-5 text-2xl sm:text-[1.75rem] font-extrabold text-slate-900 dark:text-white tracking-tight">Sign in to the admin panel</h2>
-        <p class="mt-1.5 text-[14px] text-slate-500 dark:text-slate-400">Use your staff email or registered mobile number.</p>
+        <span class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl"><i class="ph-duotone ph-lock-key"></i></span>
+        <h2 class="mt-5 text-2xl sm:text-[1.75rem] font-extrabold text-slate-900 dark:text-white tracking-tight">Sign in to Administration</h2>
+        <p class="mt-1.5 text-[14px] text-slate-500 dark:text-slate-400">Use your staff email or registered phone number.</p>
     </div>
 
     @if(session('error'))
@@ -40,17 +40,14 @@
             <label for="login" class="fx-label">Email or phone</label>
             <div class="relative">
                 <i class="ph ph-user-circle absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none"></i>
-                <input type="text" id="login" name="login" value="{{ old('login') }}" required autofocus autocomplete="username" placeholder="admin@grocery.com or 9876543210"
+                <input type="text" id="login" name="login" value="{{ old('login') }}" required autofocus autocomplete="username" placeholder="superadmin@grocery.com"
                        class="fx-input !h-12 !pl-11 @error('login') is-invalid @enderror">
             </div>
             @error('login')<p class="text-xs font-semibold text-rose-600 mt-1">{{ $message }}</p>@enderror
         </div>
 
         <div>
-            <div class="flex items-center justify-between mb-1.5">
-                <label for="password" class="fx-label !mb-0">Password</label>
-                <a href="{{ route('password.forgot') }}" class="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline">Forgot password?</a>
-            </div>
+            <label for="password" class="fx-label">Password</label>
             <div class="relative">
                 <i class="ph ph-lock-simple absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none"></i>
                 <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="••••••••"
@@ -60,7 +57,6 @@
                 </button>
             </div>
             @error('password')<p class="text-xs font-semibold text-rose-600 mt-1">{{ $message }}</p>@enderror
-            <p id="capsHint" class="hidden text-[11px] font-semibold text-amber-600 mt-1 items-center gap-1"><i class="ph-fill ph-warning"></i>Caps Lock is on</p>
         </div>
 
         <label class="flex items-center gap-2.5 cursor-pointer select-none">
@@ -86,22 +82,15 @@
             <dt class="text-slate-500 dark:text-slate-400">Password</dt><dd class="font-mono font-bold text-slate-800 dark:text-slate-100">admin123</dd>
         </dl>
     </div>
-
-    <p class="mt-8 text-center text-[12px] text-slate-400">Not staff? <a href="{{ route('home') }}" class="font-bold text-emerald-600 dark:text-emerald-400 hover:underline">Return to the storefront</a></p>
 @endsection
 
 @push('scripts')
 <script>
-    document.getElementById('useDemoBtn').addEventListener('click', function () {
+    document.getElementById('useDemoBtn')?.addEventListener('click', function () {
         document.getElementById('login').value = 'superadmin@grocery.com';
         var p = document.getElementById('password');
         p.value = 'admin123';
         p.focus();
     });
-    (function () {
-        var p = document.getElementById('password'), hint = document.getElementById('capsHint');
-        function check(e) { var on = e.getModifierState && e.getModifierState('CapsLock'); hint.classList.toggle('hidden', !on); hint.classList.toggle('flex', !!on); }
-        p.addEventListener('keydown', check); p.addEventListener('keyup', check);
-    })();
 </script>
 @endpush

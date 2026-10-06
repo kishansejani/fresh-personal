@@ -3,384 +3,287 @@
 @section('title', 'Dashboard')
 
 @section('content')
-@php
-    $hour = now()->hour;
-    $greeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
-    $firstName = explode(' ', Auth::user()->name ?? 'Admin')[0];
-    $u = Auth::user();
-    $statusMeta = [
-        'pending'          => ['Pending',          '#f59e0b', 'badge-warning'],
-        'confirmed'        => ['Confirmed',        '#3b82f6', 'badge-info'],
-        'processing'       => ['Processing',       '#6366f1', 'badge-violet'],
-        'out_for_delivery' => ['Out for delivery', '#a855f7', 'badge-violet'],
-        'delivered'        => ['Delivered',        '#10b981', 'badge-success'],
-        'cancelled'        => ['Cancelled',        '#f43f5e', 'badge-danger'],
-    ];
-    $statusTotal = max(array_sum($statusCounts), 1);
-@endphp
+<div class="space-y-6">
 
-    {{-- Welcome header --}}
-    <div class="page-header">
-        <div class="page-header-main">
-            <div class="min-w-0">
-                <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ now()->format('l, d F Y') }}</p>
-                <h1 class="page-title mt-1">{{ $greeting }}, {{ $firstName }} 👋</h1>
-                <p class="page-subtitle">Here's what's happening in your store today.</p>
+    {{-- Welcome Banner --}}
+    <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden shadow-xl border border-slate-700/50">
+        <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"></div>
+        <div class="absolute right-32 -bottom-16 w-48 h-48 rounded-full bg-blue-500/15 blur-3xl pointer-events-none"></div>
+
+        <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[11px] font-bold uppercase tracking-wider text-emerald-300">
+                    <i class="ph-fill ph-check-circle"></i> {{ __('System Active & Operational') }}
+                </span>
+                <h1 class="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight">
+                    {{ __('Welcome back') }}, {{ Auth::user()->name }}! 👋
+                </h1>
+                <p class="mt-1 text-sm text-slate-300 max-w-xl">
+                    {{ __('Administration Console — manage users, configure granular roles and customize system settings seamlessly.') }}
+                </p>
             </div>
-        </div>
-        <div class="page-actions">
-            <a href="{{ route('home') }}" target="_blank" class="btn btn-outline"><i class="ph ph-storefront"></i> Storefront</a>
-            @if($u->hasPermission('manage_orders'))
-                <a href="{{ route('admin.orders.index') }}" class="btn btn-outline"><i class="ph ph-shopping-cart-simple"></i> Orders</a>
-            @endif
-            @if($u->hasPermission('manage_products'))
-                <a href="{{ route('admin.products.create') }}" class="btn btn-primary"><i class="ph-bold ph-plus"></i> Add product</a>
-            @endif
-        </div>
-    </div>
 
-    {{-- Alert strip --}}
-    @if($pendingOrders > 0 || $lowStockProducts->count() > 0)
-        <div class="mb-5 flex flex-wrap gap-2.5">
-            @if($pendingOrders > 0 && $u->hasPermission('manage_orders'))
-                <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12.5px] font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30">
-                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span></span>
-                    {{ __($pendingOrders == 1 ? ':count order awaiting confirmation' : ':count orders awaiting confirmation', ['count' => $pendingOrders]) }} <i class="ph ph-arrow-right"></i>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="{{ route('admin.users.create') }}" class="btn bg-emerald-600 hover:bg-emerald-500 text-white font-bold !border-0 shadow-lg shadow-emerald-600/25">
+                    <i class="ph-bold ph-user-plus text-lg"></i> {{ __('Add User') }}
                 </a>
-            @endif
-            @if($expressOpen > 0 && $u->hasPermission('manage_orders'))
-                <a href="{{ route('admin.orders.index', ['delivery_type' => 'two_hours']) }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12.5px] font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-500/30">
-                    <i class="ph-fill ph-lightning"></i> {{ __($expressOpen == 1 ? ':count express (2-hour) delivery in progress' : ':count express (2-hour) deliveries in progress', ['count' => $expressOpen]) }}
+                <a href="{{ route('admin.roles.create') }}" class="btn bg-white/10 hover:bg-white/20 text-white font-semibold backdrop-blur-sm !border-white/10">
+                    <i class="ph-bold ph-shield-plus text-lg"></i> {{ __('Add Role') }}
                 </a>
-            @endif
-            @if($lowStockProducts->count() > 0 && $u->hasPermission('manage_stock'))
-                <a href="{{ route('admin.stock.index', ['filter' => 'low']) }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12.5px] font-bold bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30">
-                    <i class="ph-fill ph-warning"></i> {{ __($lowStockProducts->count() == 1 ? ':count product running low' : ':count products running low', ['count' => $lowStockProducts->count()]) }}
-                </a>
-            @endif
-        </div>
-    @endif
-
-    {{-- KPIs --}}
-    <div class="stat-grid cols-4">
-        <div class="stat-card">
-            <div class="stat-top">
-                <span class="stat-label" title="Orders that are paid or delivered">Collected revenue</span>
-                <span class="stat-icon tone-emerald"><i class="ph-duotone ph-currency-inr"></i></span>
-            </div>
-            <div class="stat-value">₹{{ number_format($totalRevenue, 0) }}</div>
-            <div class="stat-meta">
-                <span class="text-emerald-600 dark:text-emerald-400 font-bold">+₹{{ number_format($todayRevenue, 0) }}</span> today
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-top">
-                <span class="stat-label">Last 7 days</span>
-                <span class="stat-icon tone-blue"><i class="ph-duotone ph-chart-line-up"></i></span>
-            </div>
-            <div class="stat-value">₹{{ number_format($weekRevenue, 0) }}</div>
-            <div class="stat-meta">
-                @if(!is_null($revenueChange))
-                    <span class="inline-flex items-center gap-0.5 font-bold {{ $revenueChange >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
-                        <i class="ph-bold {{ $revenueChange >= 0 ? 'ph-trend-up' : 'ph-trend-down' }}"></i>{{ abs($revenueChange) }}%
-                    </span> {{ __('vs previous week') }}
-                @else
-                    {{ __('Avg. order :amount', ['amount' => '₹'.number_format($avgOrderValue, 0)]) }}
-                @endif
-            </div>
-        </div>
-        <a href="{{ $u->hasPermission('manage_orders') ? route('admin.orders.index') : '#' }}" class="stat-card">
-            <div class="stat-top">
-                <span class="stat-label">Orders</span>
-                <span class="stat-icon tone-amber"><i class="ph-duotone ph-shopping-cart-simple"></i></span>
-            </div>
-            <div class="stat-value">{{ number_format($totalOrders) }}</div>
-            <div class="stat-meta"><b class="text-slate-700 dark:text-slate-200">{{ $todayOrders }}</b> today · <b class="text-amber-600 dark:text-amber-400">{{ $pendingOrders }}</b> pending</div>
-        </a>
-        <div class="stat-card">
-            <div class="stat-top">
-                <span class="stat-label">Customers</span>
-                <span class="stat-icon tone-violet"><i class="ph-duotone ph-users-three"></i></span>
-            </div>
-            <div class="stat-value">{{ number_format($totalCustomers) }}</div>
-            <div class="stat-meta"><b class="text-violet-600 dark:text-violet-400">+{{ $newCustomersWeek }}</b> new this week</div>
-        </div>
-        <a href="{{ $u->hasPermission('manage_products') ? route('admin.products.index') : '#' }}" class="stat-card">
-            <div class="stat-top">
-                <span class="stat-label">Products</span>
-                <span class="stat-icon tone-slate"><i class="ph-duotone ph-package"></i></span>
-            </div>
-            <div class="stat-value">{{ number_format($totalProducts) }}</div>
-            <div class="stat-meta">{{ __('Avg. order value :amount', ['amount' => '₹'.number_format($avgOrderValue, 0)]) }}</div>
-        </a>
-        <a href="{{ $u->hasPermission('manage_stock') ? route('admin.stock.index', ['filter' => 'low']) : '#' }}" class="stat-card">
-            <div class="stat-top">
-                <span class="stat-label">Low stock</span>
-                <span class="stat-icon tone-orange"><i class="ph-duotone ph-warning"></i></span>
-            </div>
-            <div class="stat-value">{{ $lowStockProducts->count() }}</div>
-            <div class="stat-meta">At or below reorder level</div>
-        </a>
-        <a href="{{ $u->hasPermission('manage_stock') ? route('admin.stock.index', ['filter' => 'out']) : '#' }}" class="stat-card">
-            <div class="stat-top">
-                <span class="stat-label">Out of stock</span>
-                <span class="stat-icon tone-rose"><i class="ph-duotone ph-prohibit"></i></span>
-            </div>
-            <div class="stat-value">{{ $outOfStockCount }}</div>
-            <div class="stat-meta">Hidden from checkout</div>
-        </a>
-        <a href="{{ $u->hasPermission('manage_offers') ? route('admin.offers.index') : '#' }}" class="stat-card">
-            <div class="stat-top">
-                <span class="stat-label">Active offers</span>
-                <span class="stat-icon tone-cyan"><i class="ph-duotone ph-ticket"></i></span>
-            </div>
-            <div class="stat-value">{{ $activeOffers }}</div>
-            <div class="stat-meta">Coupons customers can use</div>
-        </a>
-    </div>
-
-    {{-- Charts --}}
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
-        <div class="card xl:col-span-2">
-            <div class="card-header">
-                <div>
-                    <h3 class="card-title"><i class="ph-duotone ph-chart-line-up"></i> Sales trend</h3>
-                    <p class="card-subtitle">Revenue from non-cancelled orders, last 7 days</p>
-                </div>
-                <span class="badge badge-neutral">{{ __(':amount this week', ['amount' => '₹'.number_format($weekRevenue, 0)]) }}</span>
-            </div>
-            <div class="card-body">
-                <div class="relative h-72"><canvas id="salesChart" aria-label="Sales trend chart" role="img"></canvas></div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <div>
-                    <h3 class="card-title"><i class="ph-duotone ph-chart-donut"></i> Order pipeline</h3>
-                    <p class="card-subtitle">All orders by current status</p>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="relative h-44 mb-4">
-                    <canvas id="statusChart" aria-label="Order status chart" role="img"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ array_sum($statusCounts) }}</span>
-                        <span class="text-[11px] font-semibold text-slate-500">orders</span>
-                    </div>
-                </div>
-                <ul class="space-y-2">
-                    @foreach($statusMeta as $key => [$label, $color])
-                        <li>
-                            <a href="{{ $u->hasPermission('manage_orders') ? route('admin.orders.index', ['status' => $key]) : '#' }}" class="flex items-center gap-2.5 text-[12.5px] group">
-                                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: {{ $color }}"></span>
-                                <span class="font-semibold text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">{{ $label }}</span>
-                                <span class="flex-1 mx-2 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><span class="block h-full rounded-full" style="width: {{ round($statusCounts[$key] / $statusTotal * 100) }}%; background: {{ $color }}"></span></span>
-                                <span class="font-bold text-slate-900 dark:text-white tabular-nums w-6 text-right">{{ $statusCounts[$key] }}</span>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
             </div>
         </div>
     </div>
 
-    {{-- Recent orders + side column --}}
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
-        <div class="card xl:col-span-2 overflow-hidden">
-            <div class="card-header">
+    {{-- Top Statistics Cards --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+
+        {{-- Card 1: Total Users --}}
+        <div class="card p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="card-title"><i class="ph-duotone ph-receipt"></i> Recent orders</h3>
-                    <p class="card-subtitle">{{ __('The latest :count orders placed', ['count' => $recentOrders->count()]) }}</p>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ __('Total Users') }}</span>
+                    <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{{ number_format($totalUsers) }}</h3>
                 </div>
-                @if($u->hasPermission('manage_orders'))
-                    <a href="{{ route('admin.orders.index') }}" class="btn btn-outline btn-sm">View all <i class="ph ph-arrow-right"></i></a>
-                @endif
+                <span class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl">
+                    <i class="ph-duotone ph-users-three"></i>
+                </span>
             </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                <span class="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                    <i class="ph-fill ph-circle text-[8px]"></i> {{ $activeUsers }} {{ __('Active') }}
+                </span>
+                <span class="text-slate-400 font-medium">
+                    {{ $inactiveUsers }} {{ __('Inactive') }}
+                </span>
+            </div>
+        </div>
+
+        {{-- Card 2: System Roles --}}
+        <div class="card p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ __('Roles Configured') }}</span>
+                    <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{{ number_format($totalRoles) }}</h3>
+                </div>
+                <span class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl">
+                    <i class="ph-duotone ph-shield-check"></i>
+                </span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                <span class="text-slate-600 dark:text-slate-300 font-semibold">
+                    {{ $superAdminsCount }} {{ __('Super Admins') }}
+                </span>
+                <span class="text-slate-400 font-medium">
+                    {{ $adminsCount }} {{ __('Admins') }}
+                </span>
+            </div>
+        </div>
+
+        {{-- Card 3: Permissions --}}
+        <div class="card p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ __('Permissions') }}</span>
+                    <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">{{ number_format($totalPermissions) }}</h3>
+                </div>
+                <span class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl">
+                    <i class="ph-duotone ph-key"></i>
+                </span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                <span class="text-purple-600 dark:text-purple-400 font-semibold">
+                    {{ __('Granular access control') }}
+                </span>
+                <span class="text-slate-400">
+                    {{ __('Role Matrix') }}
+                </span>
+            </div>
+        </div>
+
+        {{-- Card 4: Settings & Mode --}}
+        <div class="card p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ __('Theme & Brand') }}</span>
+                    <h3 class="text-xl font-extrabold text-slate-900 dark:text-white mt-1 truncate max-w-[130px]">{{ $settings['store_name'] ?? 'Console' }}</h3>
+                </div>
+                <span class="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl">
+                    <i class="ph-duotone ph-gear-six"></i>
+                </span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                <span class="text-amber-600 dark:text-amber-400 font-semibold uppercase">
+                    {{ $settings['theme_mode'] ?? 'System' }} {{ __('Mode') }}
+                </span>
+                <a href="{{ route('admin.settings.index') }}" class="text-slate-500 hover:text-slate-900 dark:hover:text-white font-medium hover:underline">
+                    {{ __('Customize') }} &rarr;
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- Main Grid: Recent Users & Module Quick Access --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {{-- Left 2 cols: Recent Users Table --}}
+        <div class="lg:col-span-2 card overflow-hidden">
+            <div class="card-header flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                    <h3 class="card-title text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="ph-duotone ph-users-three text-primary"></i> {{ __('Recent Users') }}
+                    </h3>
+                    <p class="card-subtitle text-xs text-slate-500">{{ __('Latest registered and active system accounts') }}</p>
+                </div>
+                <a href="{{ route('admin.users.index') }}" class="btn btn-outline btn-sm">
+                    {{ __('View all users') }} &rarr;
+                </a>
+            </div>
+
             <div class="overflow-x-auto">
-                <table class="table-modern">
-                    <thead>
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
                         <tr>
-                            <th>Order</th>
-                            <th>Customer</th>
-                            <th class="hidden md:table-cell">Delivery</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th class="text-right"><span class="sr-only">Actions</span></th>
+                            <th class="py-3 px-4">{{ __('User') }}</th>
+                            <th class="py-3 px-4">{{ __('Role') }}</th>
+                            <th class="py-3 px-4">{{ __('Status') }}</th>
+                            <th class="py-3 px-4">{{ __('Joined') }}</th>
+                            <th class="py-3 px-4 text-right">{{ __('Action') }}</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($recentOrders as $order)
-                            @php $sm = $statusMeta[$order->order_status] ?? [ucfirst($order->order_status), '#94a3b8', 'badge-neutral']; @endphp
-                            <tr>
-                                <td>
-                                    <a href="{{ route('admin.orders.show', $order) }}" class="font-bold text-slate-900 dark:text-white hover:underline">{{ $order->order_number }}</a>
-                                    <span class="block text-[11px] text-slate-400">{{ $order->created_at->format('d M, h:i A') }}</span>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                        @forelse($recentUsers as $user)
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-slate-200">
+                                            {{ mb_substr($user->name ?? 'U', 0, 1) }}
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">{{ $user->name }}</p>
+                                            <p class="text-[11px] text-slate-400">{{ $user->email ?? $user->phone }}</p>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td>
-                                    <span class="block font-semibold text-slate-800 dark:text-slate-100">{{ $order->customer_name }}</span>
-                                    <span class="block text-[11px] text-slate-400">{{ $order->customer_phone }}</span>
+                                <td class="py-3 px-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $user->role === 'super_admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300' : ($user->role === 'admin' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300') }}">
+                                        {{ $user->roleModel->display_name ?? ucfirst($user->role ?? 'User') }}
+                                    </span>
                                 </td>
-                                <td class="hidden md:table-cell">
-                                    @if($order->delivery_type === 'two_hours')
-                                        <span class="badge badge-violet"><i class="ph-fill ph-lightning"></i> 2-hour</span>
+                                <td class="py-3 px-4">
+                                    @if($user->is_active)
+                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                            <i class="ph-fill ph-check-circle"></i> {{ __('Active') }}
+                                        </span>
                                     @else
-                                        <span class="badge badge-info"><i class="ph ph-calendar-blank"></i> Next day</span>
+                                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                                            <i class="ph-fill ph-x-circle"></i> {{ __('Inactive') }}
+                                        </span>
                                     @endif
                                 </td>
-                                <td class="font-bold text-slate-900 dark:text-white whitespace-nowrap">₹{{ number_format($order->total_amount, 2) }}</td>
-                                <td><span class="badge {{ $sm[2] }} badge-dot">{{ $sm[0] }}</span></td>
-                                <td class="text-right">
-                                    <div class="act justify-end">
-                                        <a href="{{ route('admin.orders.show', $order) }}" class="act-btn" title="View order"><i class="ph ph-eye"></i></a>
-                                        <a href="{{ route('admin.invoices.show', $order) }}" class="act-btn hidden sm:inline-grid" title="Invoice"><i class="ph ph-receipt"></i></a>
-                                    </div>
+                                <td class="py-3 px-4 text-xs text-slate-400">
+                                    {{ $user->created_at ? $user->created_at->format('d M Y') : '—' }}
+                                </td>
+                                <td class="py-3 px-4 text-right">
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-ghost btn-sm !p-1.5" title="{{ __('Edit') }}">
+                                        <i class="ph ph-pencil-simple text-base"></i>
+                                    </a>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6"><div class="empty-state"><i class="ph-duotone ph-shopping-cart-simple"></i><h4>No orders yet</h4><p>New orders will show up here.</p></div></td></tr>
+                            <tr>
+                                <td colspan="5" class="py-6 text-center text-slate-400">
+                                    {{ __('No users found.') }}
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="space-y-5">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="ph-duotone ph-warning"></i> Low stock alerts</h3>
-                    @if($u->hasPermission('manage_stock'))
-                        <a href="{{ route('admin.stock.index') }}" class="text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white">Stock sheet <i class="ph ph-arrow-right"></i></a>
-                    @endif
-                </div>
-                <div class="p-2 max-h-[22rem] overflow-y-auto">
-                    @forelse($lowStockProducts->take(8) as $product)
-                        <div class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60">
-                            <img src="{{ $product->thumbnail_url }}" class="thumb" alt="" loading="lazy">
-                            <div class="min-w-0 flex-1">
-                                <p class="text-[13px] font-bold text-slate-900 dark:text-white truncate">{{ $product->name_en }}</p>
-                                <p class="text-[11px] text-slate-500">{{ $product->unit }} · ₹{{ number_format($product->effective_price, 2) }}</p>
-                            </div>
-                            <div class="text-right shrink-0">
-                                <span class="badge {{ $product->stock_quantity <= 0 ? 'badge-danger' : 'badge-warning' }}">{{ $product->stock_quantity <= 0 ? 'Out' : $product->stock_quantity.' left' }}</span>
-                                @if($u->hasPermission('manage_stock'))
-                                    <a href="{{ route('admin.stock.index', ['filter' => $product->stock_quantity <= 0 ? 'out' : 'low']) }}" class="block mt-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline">Restock</a>
-                                @endif
-                            </div>
-                        </div>
-                    @empty
-                        <div class="empty-state py-8"><i class="ph-duotone ph-check-circle text-emerald-400"></i><h4>Inventory looks healthy</h4><p>No products are below their reorder level.</p></div>
-                    @endforelse
-                </div>
-            </div>
+        {{-- Right 1 col: Quick Modules & System Status --}}
+        <div class="space-y-6">
 
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="ph-duotone ph-trophy"></i> Best sellers</h3>
-                </div>
-                <div class="p-2">
-                    @forelse($topProducts as $i => $tp)
-                        <div class="flex items-center gap-3 p-2.5">
-                            <span class="w-7 h-7 rounded-lg grid place-items-center text-xs font-extrabold {{ $i === 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' }}">{{ $i + 1 }}</span>
-                            <span class="flex-1 min-w-0 text-[13px] font-semibold text-slate-800 dark:text-slate-100 truncate">{{ $tp->name }}</span>
-                            <span class="text-right">
-                                <span class="block text-[12.5px] font-bold text-slate-900 dark:text-white">{{ __(':count sold', ['count' => (int) $tp->qty]) }}</span>
-                                <span class="block text-[11px] text-slate-500">₹{{ number_format($tp->revenue, 0) }}</span>
+            {{-- Administration Modules Card --}}
+            <div class="card p-5">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                    <i class="ph-duotone ph-squares-four text-primary"></i> {{ __('Administration Modules') }}
+                </h3>
+                <div class="space-y-2.5">
+                    <a href="{{ route('admin.users.index') }}" class="flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500/50 hover:bg-blue-50/30 dark:hover:bg-blue-500/5 transition group">
+                        <div class="flex items-center gap-3">
+                            <span class="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg">
+                                <i class="ph-duotone ph-users-three"></i>
                             </span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition">{{ __('Users') }}</h4>
+                                <p class="text-[11px] text-slate-400">{{ __('Create, edit & manage users') }}</p>
+                            </div>
                         </div>
-                    @empty
-                        <div class="empty-state py-8"><i class="ph-duotone ph-trophy"></i><h4>No sales yet</h4></div>
-                    @endforelse
+                        <i class="ph ph-caret-right text-slate-400 group-hover:translate-x-0.5 transition-transform"></i>
+                    </a>
+
+                    <a href="{{ route('admin.roles.index') }}" class="flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-500/50 hover:bg-emerald-50/30 dark:hover:bg-emerald-500/5 transition group">
+                        <div class="flex items-center gap-3">
+                            <span class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
+                                <i class="ph-duotone ph-shield-check"></i>
+                            </span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition">{{ __('Roles & Permissions') }}</h4>
+                                <p class="text-[11px] text-slate-400">{{ __('Role matrix & permission grants') }}</p>
+                            </div>
+                        </div>
+                        <i class="ph ph-caret-right text-slate-400 group-hover:translate-x-0.5 transition-transform"></i>
+                    </a>
+
+                    <a href="{{ route('admin.settings.index') }}" class="flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-500/50 hover:bg-purple-50/30 dark:hover:bg-purple-500/5 transition group">
+                        <div class="flex items-center gap-3">
+                            <span class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center text-lg">
+                                <i class="ph-duotone ph-gear-six"></i>
+                            </span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition">{{ __('Settings') }}</h4>
+                                <p class="text-[11px] text-slate-400">{{ __('Panel colors, sidebar & footer') }}</p>
+                            </div>
+                        </div>
+                        <i class="ph ph-caret-right text-slate-400 group-hover:translate-x-0.5 transition-transform"></i>
+                    </a>
                 </div>
             </div>
+
+            {{-- System Information Card --}}
+            <div class="card p-5">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                    <i class="ph-duotone ph-cpu text-primary"></i> {{ __('System Environment') }}
+                </h3>
+                <dl class="space-y-2 text-xs">
+                    <div class="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                        <dt class="text-slate-400">{{ __('PHP Version') }}</dt>
+                        <dd class="font-mono font-bold text-slate-700 dark:text-slate-200">{{ $systemInfo['php_version'] }}</dd>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                        <dt class="text-slate-400">{{ __('Laravel Version') }}</dt>
+                        <dd class="font-mono font-bold text-slate-700 dark:text-slate-200">v{{ $systemInfo['laravel_version'] }}</dd>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                        <dt class="text-slate-400">{{ __('Environment') }}</dt>
+                        <dd class="font-semibold text-emerald-600 uppercase">{{ $systemInfo['server_environment'] }}</dd>
+                    </div>
+                    <div class="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                        <dt class="text-slate-400">{{ __('Database') }}</dt>
+                        <dd class="font-mono font-semibold text-slate-700 dark:text-slate-200">{{ $systemInfo['db_name'] }}</dd>
+                    </div>
+                    <div class="flex justify-between py-1">
+                        <dt class="text-slate-400">{{ __('Timezone') }}</dt>
+                        <dd class="font-semibold text-slate-700 dark:text-slate-200">{{ $systemInfo['timezone'] }}</dd>
+                    </div>
+                </dl>
+            </div>
+
         </div>
+
     </div>
 
-    {{-- Quick actions --}}
-    <div class="card mt-5">
-        <div class="card-header"><h3 class="card-title"><i class="ph-duotone ph-lightning"></i> Quick actions</h3></div>
-        <div class="card-body grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            @php
-                $qa = array_filter([
-                    $u->hasPermission('manage_products') ? ['Add product', 'package', route('admin.products.create'), 'tone-emerald'] : null,
-                    $u->hasPermission('manage_stock') ? ['Update stock', 'warehouse', route('admin.stock.index'), 'tone-orange'] : null,
-                    $u->hasPermission('manage_orders') ? ['Process orders', 'truck', route('admin.orders.index', ['status' => 'pending']), 'tone-amber'] : null,
-                    $u->hasPermission('manage_offers') ? ['New coupon', 'ticket', route('admin.offers.create'), 'tone-cyan'] : null,
-                    $u->hasPermission('manage_sliders') ? ['Home banner', 'slideshow', route('admin.sliders.create'), 'tone-violet'] : null,
-                    $u->hasPermission('manage_settings') ? ['Theme settings', 'palette', route('admin.settings.index'), 'tone-blue'] : null,
-                ]);
-            @endphp
-            @foreach($qa as [$label, $icon, $url, $tone])
-                <a href="{{ $url }}" class="group flex flex-col items-center gap-2.5 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-lift transition text-center">
-                    <span class="stat-icon {{ $tone }} group-hover:scale-110 transition"><i class="ph-duotone ph-{{ $icon }}"></i></span>
-                    <span class="text-[12.5px] font-bold text-slate-700 dark:text-slate-200">{{ $label }}</span>
-                </a>
-            @endforeach
-        </div>
-    </div>
+</div>
 @endsection
-
-@push('scripts')
-<script>
-    (function () {
-        const salesCtx = document.getElementById('salesChart');
-        if (salesCtx && window.Chart) {
-            const ctx = salesCtx.getContext('2d');
-            const grad = ctx.createLinearGradient(0, 0, 0, 280);
-            grad.addColorStop(0, 'rgba(16, 185, 129, .28)');
-            grad.addColorStop(1, 'rgba(16, 185, 129, 0)');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: @json($salesTrend['labels']),
-                    datasets: [{
-                        label: 'Revenue',
-                        data: @json($salesTrend['data']),
-                        borderColor: '#10b981',
-                        backgroundColor: grad,
-                        fill: true,
-                        tension: .4,
-                        borderWidth: 2.5,
-                        pointRadius: 0,
-                        pointHoverRadius: 6,
-                        pointHoverBackgroundColor: '#10b981',
-                        pointHoverBorderColor: '#fff',
-                        pointHoverBorderWidth: 2,
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: c => ' ₹' + Number(c.parsed.y).toLocaleString('en-IN', { maximumFractionDigits: 2 }) } }
-                    },
-                    scales: {
-                        x: { grid: { display: false }, border: { display: false } },
-                        y: { beginAtZero: true, border: { display: false }, ticks: { callback: v => '₹' + Number(v).toLocaleString('en-IN'), maxTicksLimit: 6 } }
-                    }
-                }
-            });
-        }
-
-        const statusCtx = document.getElementById('statusChart');
-        if (statusCtx && window.Chart) {
-            new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: @json(array_column($statusMeta, 0)),
-                    datasets: [{
-                        data: @json(array_values($statusCounts)),
-                        backgroundColor: @json(array_column($statusMeta, 1)),
-                        borderWidth: 0,
-                        hoverOffset: 6,
-                        spacing: 2,
-                        borderRadius: 4,
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '74%', plugins: { legend: { display: false } } }
-            });
-        }
-    })();
-</script>
-@endpush

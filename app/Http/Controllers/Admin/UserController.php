@@ -33,7 +33,7 @@ class UserController extends Controller
             'total' => User::count(),
             'super_admin' => User::where('role', 'super_admin')->count(),
             'admin' => User::where('role', 'admin')->count(),
-            'customer' => User::where(function($q){ $q->whereIn('role', ['user', 'customer'])->orWhereNull('role'); })->count(),
+            'user' => User::whereNotIn('role', ['super_admin', 'admin'])->count(),
             'active' => User::where('is_active', true)->count(),
         ];
 
