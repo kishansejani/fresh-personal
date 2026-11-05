@@ -189,8 +189,8 @@
     
     {{-- DataTables Styles --}}
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="{{ asset('assets/admin/dataTables.colReorder.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/admin/col-customizer.css') }}?v=1.1.0">
+    <link rel="stylesheet" href="{{ asset('assets/admin/dataTables.colReorder.min.css') }}?v=1.2.0">
+    <link rel="stylesheet" href="{{ asset('assets/admin/col-customizer.css') }}?v=1.2.0">
     
     @stack('styles')
 </head>
@@ -482,12 +482,12 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="{{ asset('assets/admin/dataTables.colReorder.min.js') }}"></script>
+    <script src="{{ asset('assets/admin/dataTables.colReorder.min.js') }}?v=1.2.0"></script>
     <script>
         window.__FX_PALETTE__ = @json($paletteItems);
     </script>
     <script src="{{ asset('assets/admin/admin.js') }}?v=2.1.0"></script>
-    <script src="{{ asset('assets/admin/col-customizer.js') }}?v=1.1.0"></script>
+    <script src="{{ asset('assets/admin/col-customizer.js') }}?v=1.2.0"></script>
     <script src="{{ asset('assets/shared/fx-select.js') }}?v=3.1.0"></script>
     <script>
         // Floating Gear Customizer drawer interactions

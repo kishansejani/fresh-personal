@@ -417,19 +417,46 @@ table.dataTable thead th:active {
 
 /* DataTables ColReorder insertion indicator */
 div.DTCR_pointer {
-    width: 3px !important;
+    width: 2.5px !important;
     background-color: #2563eb !important;
-    box-shadow: 0 0 8px rgba(37, 99, 235, 0.7) !important;
-    z-index: 99999 !important;
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.7) !important;
+    z-index: 100001 !important;
+    pointer-events: none !important;
 }
-table.DTCR_clonedTable.dataTable {
-    background-color: rgba(255, 255, 255, 0.96) !important;
-    box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.3) !important;
-    border-radius: 10px !important;
+.dark div.DTCR_pointer {
+    background-color: #38bdf8 !important;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.7) !important;
+}
+
+/* Floating Drag Element */
+.DTCR_clonedTable,
+table.DTCR_clonedTable {
+    position: absolute !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
     border: 1.5px solid #2563eb !important;
-    z-index: 99999 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 12px 28px -5px rgba(15, 23, 42, 0.35) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    max-width: 220px !important;
+    overflow: hidden !important;
+    z-index: 100002 !important;
+    pointer-events: none !important;
+    opacity: 0.96 !important;
+    text-transform: uppercase !important;
 }
-.dark table.DTCR_clonedTable.dataTable {
-    background-color: rgba(30, 41, 59, 0.96) !important;
+.dark .DTCR_clonedTable,
+.dark table.DTCR_clonedTable {
+    background: #1e293b !important;
+    color: #f8fafc !important;
     border-color: #38bdf8 !important;
+    box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.7) !important;
 }
