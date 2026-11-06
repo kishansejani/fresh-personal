@@ -1,10 +1,10 @@
 /**
- * Antigravity Admin Console - Sidebar Customizer Runtime
- * Matches user's uploaded image:
- * - Slide-in panel docked next to sidebar
- * - Drag & drop reordering (and Up/Down arrows)
- * - Eye icon to toggle hide/show (Dashboard and Settings locked)
- * - "Reset to default" and "✓ Done" buttons
+ * Antigravity Admin Console - In-Sidebar Navigation Customizer
+ * In-place customization inside the sidebar itself (exact same sidebar colors):
+ * - Switches sidebar to "Customize menu" mode in-place
+ * - Drag & drop reordering, Up/Down arrow buttons
+ * - Eye icon to hide/show (Dashboard and Settings locked)
+ * - "Reset to default" and "Done" buttons inside sidebar
  * - LocalStorage persistence across all pages and sessions
  */
 (function ($, window, document) {
@@ -16,9 +16,10 @@
 
     var ASC = window.AdminSidebarCustomizer;
     var STORAGE_KEY = 'admin_sidebar_customization';
-    var defaultItems = []; // [{ key: 'admin.dashboard', label: 'Dashboard', icon: 'squares-four', href: '...', locked: true, groupKey: 'overview' }]
+    var defaultItems = [];
+    var wasMini = false;
 
-    // Scan default items from sidebar
+    // Scan default items from sidebar navigation
     function scanDefaultSidebarItems() {
         defaultItems = [];
         $('#sidebarNav .sb-item').each(function () {
@@ -39,176 +40,6 @@
                     groupKey: $group.attr('data-group') || 'main'
                 });
             }
-        });
-    }
-
-    // Injects the customizer panel HTML into body
-    function ensurePanelInjected() {
-        if (document.getElementById('sbCustomizerBackdrop')) return;
-
-        var html = 
-            '<div id="sbCustomizerBackdrop" class="sb-customizer-backdrop is-hidden" aria-hidden="true">' +
-            '    <div class="sb-customizer-panel" role="dialog" aria-modal="true" aria-labelledby="sbCustHeading">' +
-            '        <!-- Circular Close Button (top-right) -->' +
-            '        <button type="button" class="sb-cust-close-btn" id="sbCustCloseBtn" aria-label="Close">' +
-            '            <i class="ph ph-x"></i>' +
-            '        </button>' +
-            '        <!-- Header Hint -->' +
-            '        <div class="sb-cust-header">' +
-            '            <p class="sb-cust-hint" id="sbCustHeading">' +
-            '                Drag or use the arrows to reorder.<br>' +
-            '                Use the eye to hide a menu.<br>' +
-            '                <span class="sb-cust-hint-sub">Dashboard and Settings are always shown. Changes are saved to your account.</span>' +
-            '            </p>' +
-            '        </div>' +
-            '        <!-- Items List -->' +
-            '        <div class="sb-cust-list" id="sbCustList">' +
-            '            <!-- Dynamically populated -->' +
-            '        </div>' +
-            '        <!-- Footer Actions -->' +
-            '        <div class="sb-cust-footer">' +
-            '            <button type="button" class="sb-cust-btn-reset" id="sbCustResetBtn">' +
-            '                <i class="ph ph-arrow-counter-clockwise"></i> Reset to default' +
-            '            </button>' +
-            '            <button type="button" class="sb-cust-btn-done" id="sbCustDoneBtn">' +
-            '                <i class="ph-bold ph-check"></i> Done' +
-            '            </button>' +
-            '        </div>' +
-            '    </div>' +
-            '</div>';
-
-        $('body').append(html);
-        bindPanelEvents();
-    }
-
-    // Bind interaction events for the panel
-    function bindPanelEvents() {
-        var $backdrop = $('#sbCustomizerBackdrop');
-        var $list = $('#sbCustList');
-
-        // Close handlers
-        $('#sbCustCloseBtn').on('click', function () {
-            ASC.close();
-        });
-
-        $backdrop.on('click', function (e) {
-            if (e.target === this) ASC.close();
-        });
-
-        $(document).on('keydown', function (e) {
-            if (e.key === 'Escape' && !$backdrop.hasClass('is-hidden')) {
-                ASC.close();
-            }
-        });
-
-        // Up arrow click
-        $list.on('click', '.btn-up', function () {
-            var $card = $(this).closest('.sb-cust-item');
-            var $prev = $card.prev('.sb-cust-item');
-            if ($prev.length) {
-                $card.insertBefore($prev);
-                updateArrowStates();
-            }
-        });
-
-        // Down arrow click
-        $list.on('click', '.btn-down', function () {
-            var $card = $(this).closest('.sb-cust-item');
-            var $next = $card.next('.sb-cust-item');
-            if ($next.length) {
-                $card.insertAfter($next);
-                updateArrowStates();
-            }
-        });
-
-        // Eye toggle click
-        $list.on('click', '.sb-cust-btn-eye', function () {
-            var $card = $(this).closest('.sb-cust-item');
-            var isHidden = $card.hasClass('is-hidden-menu');
-
-            if (isHidden) {
-                $card.removeClass('is-hidden-menu');
-                $(this).removeClass('is-hidden-state');
-                $(this).find('i').attr('class', 'ph ph-eye');
-            } else {
-                $card.addClass('is-hidden-menu');
-                $(this).addClass('is-hidden-state');
-                $(this).find('i').attr('class', 'ph ph-eye-slash');
-            }
-        });
-
-        // Real-time Smooth Drag and Drop
-        var draggedItem = null;
-
-        $list.on('dragstart', '.sb-cust-item', function (e) {
-            draggedItem = this;
-            if (e.originalEvent && e.originalEvent.dataTransfer) {
-                e.originalEvent.dataTransfer.effectAllowed = 'move';
-                e.originalEvent.dataTransfer.setData('text/plain', $(this).attr('data-key'));
-            }
-            setTimeout(function () {
-                if (draggedItem) $(draggedItem).addClass('is-dragging');
-            }, 0);
-        });
-
-        $list.on('dragover', function (e) {
-            e.preventDefault();
-            if (!draggedItem) return;
-            if (e.originalEvent && e.originalEvent.dataTransfer) {
-                e.originalEvent.dataTransfer.dropEffect = 'move';
-            }
-
-            var clientY = e.originalEvent ? e.originalEvent.clientY : e.clientY;
-            var afterElement = getDragAfterElement(this, clientY);
-
-            if (!afterElement) {
-                this.appendChild(draggedItem);
-            } else if (afterElement !== draggedItem) {
-                this.insertBefore(draggedItem, afterElement);
-            }
-            updateArrowStates();
-        });
-
-        $list.on('dragend', '.sb-cust-item', function () {
-            if (draggedItem) {
-                $(draggedItem).removeClass('is-dragging');
-                draggedItem = null;
-            }
-            updateArrowStates();
-        });
-
-        // Reset to default
-        $('#sbCustResetBtn').on('click', function () {
-            ASC.reset();
-        });
-
-        // Done button
-        $('#sbCustDoneBtn').on('click', function () {
-            ASC.save();
-        });
-    }
-
-    function getDragAfterElement(container, y) {
-        var elements = container.querySelectorAll('.sb-cust-item:not(.is-dragging)');
-        var closest = { offset: Number.NEGATIVE_INFINITY, element: null };
-
-        for (var i = 0; i < elements.length; i++) {
-            var box = elements[i].getBoundingClientRect();
-            var offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                closest = { offset: offset, element: elements[i] };
-            }
-        }
-        return closest.element;
-    }
-
-    function updateArrowStates() {
-        var $cards = $('#sbCustList .sb-cust-item');
-        $cards.each(function (idx) {
-            var $up = $(this).find('.btn-up');
-            var $down = $(this).find('.btn-down');
-            $up.prop('disabled', idx === 0);
-            $down.prop('disabled', idx === $cards.length - 1);
         });
     }
 
@@ -239,16 +70,46 @@
         );
     }
 
+    function updateArrowStates() {
+        var $cards = $('#sbCustList .sb-cust-item');
+        $cards.each(function (idx) {
+            var $up = $(this).find('.btn-up');
+            var $down = $(this).find('.btn-down');
+            $up.prop('disabled', idx === 0);
+            $down.prop('disabled', idx === $cards.length - 1);
+        });
+    }
+
+    function getDragAfterElement(container, y) {
+        var elements = container.querySelectorAll('.sb-cust-item:not(.is-dragging)');
+        var closest = { offset: Number.NEGATIVE_INFINITY, element: null };
+
+        for (var i = 0; i < elements.length; i++) {
+            var box = elements[i].getBoundingClientRect();
+            var offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                closest = { offset: offset, element: elements[i] };
+            }
+        }
+        return closest.element;
+    }
+
     // Public API
     ASC.open = function () {
-        ensurePanelInjected();
         scanDefaultSidebarItems();
+
+        // If sidebar is mini, expand it temporarily during customization
+        if (document.documentElement.classList.contains('sidebar-mini')) {
+            wasMini = true;
+            document.documentElement.classList.remove('sidebar-mini');
+        } else {
+            wasMini = false;
+        }
 
         var saved = ASC.loadState();
         var savedOrder = saved ? saved.order : [];
         var savedHidden = saved ? (saved.hidden || []) : [];
 
-        // Build list in saved order or default order
         var orderedItems = [];
         var usedKeys = {};
 
@@ -262,14 +123,13 @@
             });
         }
 
-        // Add any remaining items that weren't in saved order
         defaultItems.forEach(function (d) {
             if (!usedKeys[d.key]) {
                 orderedItems.push(d);
             }
         });
 
-        // Render Cards
+        // Populate cards
         var $list = $('#sbCustList').empty();
         orderedItems.forEach(function (item) {
             var isHidden = !item.locked && savedHidden.indexOf(item.key) !== -1;
@@ -278,11 +138,18 @@
 
         updateArrowStates();
 
-        $('#sbCustomizerBackdrop').removeClass('is-hidden');
+        // Switch to In-Sidebar Customize Mode
+        $('#sidebarNormalView').hide();
+        $('#sidebarCustomizerView').show();
     };
 
     ASC.close = function () {
-        $('#sbCustomizerBackdrop').addClass('is-hidden');
+        $('#sidebarCustomizerView').hide();
+        $('#sidebarNormalView').show();
+
+        if (wasMini) {
+            document.documentElement.classList.add('sidebar-mini');
+        }
     };
 
     ASC.save = function () {
@@ -340,32 +207,29 @@
         }
     };
 
-    // Rearranges and filters the actual sidebar navigation DOM based on state
+    // Apply custom order & visibility to actual sidebar DOM
     ASC.applyToSidebar = function (state) {
         if (!state) state = ASC.loadState();
         if (!state) return;
 
         var order = state.order || [];
         var hidden = state.hidden || [];
-
-        // 1. Reorder items:
-        // We find the elements for each key in order and place them in sequence
         var $nav = $('#sidebarNav');
         if (!$nav.length) return;
 
-        // If order is specified, reposition list items inside their groups or flatten
+        // Reorder items in DOM
         order.forEach(function (key) {
             var $link = $nav.find('.sb-item[data-nav-key="' + key + '"]');
             if ($link.length) {
                 var $li = $link.closest('li');
                 var $ul = $li.closest('ul.sb-group-items');
                 if ($ul.length) {
-                    $ul.append($li); // Appends in order within its group
+                    $ul.append($li);
                 }
             }
         });
 
-        // 2. Hide items that are in hidden list (Dashboard & Settings can never be hidden)
+        // Hide / show items
         $nav.find('.sb-item').each(function () {
             var key = $(this).attr('data-nav-key') || $(this).attr('href');
             var isLocked = $(this).attr('data-locked') === '1' || /dashboard|setting/i.test(key);
@@ -379,7 +243,7 @@
             }
         });
 
-        // 3. If an entire group's items are hidden, hide the group
+        // Hide group if all items are hidden
         $nav.find('.sb-group').each(function () {
             var visibleItems = $(this).find('ul.sb-group-items li').filter(function () {
                 return $(this).css('display') !== 'none';
@@ -388,17 +252,105 @@
         });
     };
 
-    // Auto-init on page load
+    // Bind In-Place Events
     $(function () {
         scanDefaultSidebarItems();
         ASC.applyToSidebar();
 
-        // Bind trigger button in sidebar
-        $(document).on('click', '#openSidebarCustomizerBtn, [data-open-sidebar-customizer]', function (e) {
+        var $list = $('#sbCustList');
+
+        // Open customize mode in sidebar
+        $(document).on('click', '#openSidebarCustomizerBtn', function (e) {
             e.preventDefault();
             ASC.open();
+        });
+
+        // Close / Exit customize mode
+        $(document).on('click', '#sbCustCloseInlineBtn', function (e) {
+            e.preventDefault();
+            ASC.close();
+        });
+
+        // Up arrow click
+        $list.on('click', '.btn-up', function () {
+            var $card = $(this).closest('.sb-cust-item');
+            var $prev = $card.prev('.sb-cust-item');
+            if ($prev.length) {
+                $card.insertBefore($prev);
+                updateArrowStates();
+            }
+        });
+
+        // Down arrow click
+        $list.on('click', '.btn-down', function () {
+            var $card = $(this).closest('.sb-cust-item');
+            var $next = $card.next('.sb-cust-item');
+            if ($next.length) {
+                $card.insertAfter($next);
+                updateArrowStates();
+            }
+        });
+
+        // Eye toggle click
+        $list.on('click', '.sb-cust-btn-eye', function () {
+            var $card = $(this).closest('.sb-cust-item');
+            var isHidden = $card.hasClass('is-hidden-menu');
+
+            if (isHidden) {
+                $card.removeClass('is-hidden-menu');
+                $(this).removeClass('is-hidden-state');
+                $(this).find('i').attr('class', 'ph ph-eye');
+            } else {
+                $card.addClass('is-hidden-menu');
+                $(this).addClass('is-hidden-state');
+                $(this).find('i').attr('class', 'ph ph-eye-slash');
+            }
+        });
+
+        // Smooth Drag and Drop in Sidebar
+        var draggedEl = null;
+
+        $list.on('dragstart', '.sb-cust-item', function (e) {
+            draggedEl = this;
+            if (e.originalEvent && e.originalEvent.dataTransfer) {
+                e.originalEvent.dataTransfer.effectAllowed = 'move';
+                e.originalEvent.dataTransfer.setData('text/plain', $(this).attr('data-key'));
+            }
+            setTimeout(function () {
+                if (draggedEl) $(draggedEl).addClass('is-dragging');
+            }, 0);
+        });
+
+        $list.on('dragover', function (e) {
+            e.preventDefault();
+            if (!draggedEl) return;
+            var clientY = e.originalEvent ? e.originalEvent.clientY : e.clientY;
+            var afterElement = getDragAfterElement(this, clientY);
+
+            if (!afterElement) {
+                this.appendChild(draggedEl);
+            } else if (afterElement !== draggedEl) {
+                this.insertBefore(draggedEl, afterElement);
+            }
+            updateArrowStates();
+        });
+
+        $list.on('dragend', '.sb-cust-item', function () {
+            if (draggedEl) {
+                $(draggedEl).removeClass('is-dragging');
+                draggedEl = null;
+            }
+            updateArrowStates();
+        });
+
+        // Reset & Done buttons
+        $(document).on('click', '#sbCustResetBtn', function () {
+            ASC.reset();
+        });
+
+        $(document).on('click', '#sbCustDoneBtn', function () {
+            ASC.save();
         });
     });
 
 })(jQuery, window, document);
-
