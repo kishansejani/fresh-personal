@@ -191,6 +191,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="{{ asset('assets/admin/dataTables.colReorder.min.css') }}?v=1.2.0">
     <link rel="stylesheet" href="{{ asset('assets/admin/col-customizer.css') }}?v=1.2.0">
+    <link rel="stylesheet" href="{{ asset('assets/admin/sidebar-customizer.css') }}?v=1.0.0">
     
     @stack('styles')
 </head>
@@ -229,7 +230,11 @@
                             <li>
                                 <a href="{{ route($item['route']) }}"
                                    class="sb-item {{ $item['isActive'] ? 'is-active' : '' }}"
-                                   data-sb-link>
+                                   data-sb-link
+                                   data-nav-key="{{ $item['route'] }}"
+                                   data-nav-label="{{ $item['label'] }}"
+                                   data-nav-icon="{{ $item['icon'] }}"
+                                   data-locked="{{ in_array($item['route'], ['admin.dashboard', 'admin.settings.index']) ? '1' : '0' }}">
                                     <span class="sb-icon"><i class="ph-duotone ph-{{ $item['icon'] }}"></i></span>
                                     <span class="sb-label">{{ $item['label'] }}</span>
                                 </a>
@@ -239,6 +244,14 @@
                 </div>
             @endforeach
         </nav>
+
+        {{-- Customize Menu Action Button (Matching User's Image) --}}
+        <div class="sb-custom-action">
+            <button type="button" class="sb-item sb-customize-menu-btn" id="openSidebarCustomizerBtn" title="{{ __('Customize menu') }}">
+                <span class="sb-icon"><i class="ph ph-faders"></i></span>
+                <span class="sb-label">{{ __('Customize menu') }}</span>
+            </button>
+        </div>
 
         {{-- Footer user profile badge --}}
         <div class="sb-footer">
@@ -488,6 +501,7 @@
     </script>
     <script src="{{ asset('assets/admin/admin.js') }}?v=2.1.0"></script>
     <script src="{{ asset('assets/admin/col-customizer.js') }}?v=1.2.0"></script>
+    <script src="{{ asset('assets/admin/sidebar-customizer.js') }}?v=1.0.0"></script>
     <script src="{{ asset('assets/shared/fx-select.js') }}?v=3.1.0"></script>
     <script>
         // Floating Gear Customizer drawer interactions
